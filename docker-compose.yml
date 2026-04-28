@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend-service:/app
+      - /app/node_modules
+    depends_on:
+      - core-backend
+      - realtime-service
+      - call-service
+      - ai-backend
+
+  core-backend:
+    build:
+      context: ./core-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5040:5040"
+    environment:
+      - ENV=development
+    volumes:
+      - ./core-backend:/app
+
+  realtime-service:
+    build:
+      context: ./realtime-service
+      dockerfile: Dockerfile
+    ports:
+      - "5050:5050"
+    environment:
+      - ENV=development
+    volumes:
+      - ./realtime-service:/app
+
+  call-service:
+    build:
+      context: ./call-service
+      dockerfile: Dockerfile
+    ports:
+      - "5060:5060"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./call-service:/app
+      - /app/node_modules
+
+  ai-backend:
+    build:
+      context: ./ai-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5070:5070"
+    environment:
+      - ENV=development
+    volumes:
+      - ./ai-backend:/app
