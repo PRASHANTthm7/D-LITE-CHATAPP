@@ -54,7 +54,7 @@ export function AccountSettings() {
       <div className="bg-surface-1 border border-danger/30 rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-danger mb-2">Danger Zone</h2>
         <p className="text-sm text-text-secondary mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-        <Button variant="outline" className="text-danger border-danger hover:bg-danger hover:text-white">Delete Account</Button>
+        <Button variant="secondary" className="text-danger border-danger! hover:bg-danger hover:text-white">Delete Account</Button>
       </div>
     </div>
   );
