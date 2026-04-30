@@ -1,16 +1,20 @@
-"use client";
-
 import React from "react";
-import { Avatar } from "@/shared/components/Avatar";
-import { Button } from "@/shared/components/Button";
+import { Greeting } from "@/features/dashboard/components/Greeting";
+import { StatRow } from "@/features/dashboard/components/StatRow";
+import { RecentChatsGrid } from "@/features/dashboard/components/RecentChatsGrid";
+import { ActiveGroupsCard } from "@/features/dashboard/components/ActiveGroupsCard";
+import { RecentCallsCard } from "@/features/dashboard/components/RecentCallsCard";
 
-export default function DashboardRoute() {
+export default function DashboardPage() {
   return (
-    <div className="p-8 space-y-4">
-      <h1 className="text-2xl font-bold">Phase 1 Smoke Test</h1>
-      <div className="flex gap-4 items-center">
-        <Avatar online initials="DL" size="lg" />
-        <Button variant="primary">Test Button</Button>
+    <div className="p-8 lg:px-12 max-w-7xl mx-auto w-full">
+      <Greeting name="Aarav" />
+      <StatRow />
+      <RecentChatsGrid />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ActiveGroupsCard />
+        <RecentCallsCard />
       </div>
     </div>
   );
