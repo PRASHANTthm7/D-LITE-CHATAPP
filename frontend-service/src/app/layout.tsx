@@ -10,8 +10,27 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "D-Lite v2 — Chat, Calls & AI",
-  description: "A premium real-time messaging platform with AI-powered features, voice/video calls, and group collaboration.",
+  title: {
+    default: "D-Lite v2 — Modern Messaging",
+    template: "%s | D-Lite v2",
+  },
+  description: "A premium real-time messaging platform with AI-powered features, voice/video calls, and seamless group collaboration.",
+  keywords: ["messaging", "real-time", "chat", "ai assistant", "video calls", "team collaboration"],
+  authors: [{ name: "D-Lite Team" }],
+  creator: "D-Lite Platform",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://dlite.chat",
+    title: "D-Lite v2 — Modern Messaging",
+    description: "A premium real-time messaging platform with AI-powered features, voice/video calls, and seamless group collaboration.",
+    siteName: "D-Lite",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "D-Lite v2 — Modern Messaging",
+    description: "A premium real-time messaging platform with AI-powered features, voice/video calls, and seamless group collaboration.",
+  },
 };
 
 export default function RootLayout({
