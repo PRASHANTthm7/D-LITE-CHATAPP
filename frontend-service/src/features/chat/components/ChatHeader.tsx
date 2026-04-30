@@ -1,43 +1,49 @@
 "use client";
 
-import { Avatar } from "@/shared/ui/primitives/avatar";
-import { Phone, Video, Search, MoreVertical, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/shared/ui/primitives/button";
+import React from "react";
+import { Phone, Video, MoreVertical } from "lucide-react";
+import { Avatar } from "@/shared/components/Avatar";
+import { IconButton } from "@/shared/components/IconButton";
+import { TypingDots } from "@/shared/components/TypingDots";
+import { User } from "@/features/dashboard/lib/mock-data";
 
-export function ChatHeader({ peerId }: { peerId: string }) {
-  const peer = {
-    name: peerId === "peer-1" ? "Alice Smith" : "Peer " + peerId,
-    status: "online" as const,
-    lastSeen: "Online"
-  };
+export interface ChatHeaderProps {
+  user: User;
+  isTyping?: boolean;
+}
 
+export function ChatHeader({ user, isTyping }: ChatHeaderProps) {
   return (
-    <div className="h-16 border-b border-border-default bg-surface-1 flex items-center justify-between px-4 flex-shrink-0 z-10">
-      <div className="flex items-center gap-3">
-        <Link href="/chat" className="md:hidden p-2 -ml-2 text-text-secondary hover:text-text-primary">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <Avatar src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${peer.name}`} status={peer.status} size="md" />
+    <div className="h-[72px] shrink-0 border-b border-gray-100 bg-surface/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-10">
+      <div className="flex items-center gap-4 cursor-pointer group">
+        <Avatar initials={user.initials} online={user.isOnline} verified={user.isVerified} size="md" />
         <div>
-          <h2 className="font-bold text-sm">{peer.name}</h2>
-          <p className="text-xs text-brand-primary">{peer.lastSeen}</p>
+          <h3 className="font-bold text-gray-900 group-hover:text-brand-600 transition-colors">
+            {user.name}
+          </h3>
+          <div className="text-xs text-gray-500 flex items-center h-4">
+            {isTyping ? (
+              <div className="flex items-center gap-1.5 text-brand-500">
+                <TypingDots /> <span className="italic">typing...</span>
+              </div>
+            ) : (
+              user.isOnline ? "Online now" : "Last seen recently"
+            )}
+          </div>
         </div>
       </div>
-      
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="rounded-full text-text-secondary">
-          <Phone className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="rounded-full text-text-secondary">
-          <Video className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="hidden sm:flex rounded-full text-text-secondary">
-          <Search className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="rounded-full text-text-secondary">
-          <MoreVertical className="w-5 h-5" />
-        </Button>
+
+      <div className="flex items-center gap-2">
+        <IconButton size="md" variant="ghost" className="text-gray-500 hover:text-brand-500 hover:bg-brand-50" tooltip="Audio Call">
+          <Phone size={20} />
+        </IconButton>
+        <IconButton size="md" variant="ghost" className="text-gray-500 hover:text-brand-500 hover:bg-brand-50" tooltip="Video Call">
+          <Video size={20} />
+        </IconButton>
+        <div className="w-px h-6 bg-gray-200 mx-1" />
+        <IconButton size="md" variant="ghost" className="text-gray-500 hover:text-gray-900" tooltip="More">
+          <MoreVertical size={20} />
+        </IconButton>
       </div>
     </div>
   );

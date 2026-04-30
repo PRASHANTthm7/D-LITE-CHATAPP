@@ -1,124 +1,91 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import { cn } from "@/shared/utils/cn"
-import { ReplyPreview } from "./ReplyPreview"
-import { MessageReactions } from "./MessageReactions"
-import { MessageContextMenu } from "./MessageContextMenu"
-import { Check, CheckCheck, Clock, AlertTriangle, Reply, Smile, MoreHorizontal, Pencil } from "lucide-react"
-import type { Message } from "@/features/chat/hooks/use-chat-messages"
+import React from "react";
+import { Check, CheckCheck } from "lucide-react";
+import { ReplyQuote } from "./ReplyQuote";
+import { ReactionPill } from "./ReactionPill";
 
-interface MessageBubbleProps {
-  message: Message
-  onReply: (msg: Message) => void
-  onReact: (id: string, emoji: string) => void
-  onDelete: (id: string) => void
+export interface MessageBubbleProps {
+  id: string;
+  content: string;
+  direction: "in" | "out";
+  status?: "sending" | "sent" | "read";
+  time: string;
+  reactions?: { emoji: string; count: number; active?: boolean }[];
+  replyTo?: { authorName: string; content: string };
+  onReact?: (emoji: string) => void;
 }
 
-const statusIcon = {
-  sending:   <Clock className="w-3 h-3 opacity-60" />,
-  sent:      <Check className="w-3 h-3 opacity-60" />,
-  delivered: <CheckCheck className="w-3 h-3 opacity-60" />,
-  read:      <CheckCheck className="w-3 h-3 text-yellow-300" />,
-  failed:    <AlertTriangle className="w-3 h-3 text-danger" />,
-}
-
-export function MessageBubble({ message, onReply, onReact, onDelete }: MessageBubbleProps) {
-  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number } | null>(null)
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setContextMenu({ x: e.clientX, y: e.clientY })
-  }
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.content)
-  }
+export function MessageBubble({
+  content,
+  direction,
+  status = "read",
+  time,
+  reactions = [],
+  replyTo,
+  onReact,
+}: MessageBubbleProps) {
+  const isOut = direction === "out";
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "flex flex-col mb-3 max-w-[85%] group",
-        message.isOwn ? "ml-auto items-end" : "mr-auto items-start"
-      )}
-    >
-      {/* Reply preview above bubble */}
-      {message.replyTo && (
-        <div className={cn("mb-1 px-2", message.isOwn ? "items-end" : "items-start")}>
-          <div className={cn("border-l-2 border-brand-primary pl-2 text-xs text-text-tertiary max-w-[200px]", message.isOwn ? "text-right" : "text-left")}>
-            <span className="font-semibold text-brand-primary">{message.replyTo.sender}</span>
-            <p className="truncate">{message.replyTo.content}</p>
-          </div>
-        </div>
-      )}
+    <div className={`flex w-full mb-4 ${isOut ? "justify-end" : "justify-start"} group relative`}>
+      {/* Visual Reaction Picker Stub on Hover */}
+      <div className={`absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 ${isOut ? "right-full mr-2" : "left-full ml-2"}`}>
+        {["🔥", "👍", "❤️"].map(emoji => (
+          <button 
+            key={emoji} 
+            onClick={() => onReact?.(emoji)}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-surface shadow-sm border border-gray-100 hover:scale-110 transition-transform text-sm"
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
 
-      <div className="relative flex items-end gap-1.5">
-        {/* Hover actions for incoming */}
-        {!message.isOwn && (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mb-1">
-            <button onClick={() => onReply(message)} className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-3 transition-colors">
-              <Reply className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={(e) => setContextMenu({ x: e.clientX, y: e.clientY })} className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-3 transition-colors">
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
-        <div
-          className={cn(
-            "px-4 py-2.5 rounded-2xl relative shadow-soft cursor-pointer",
-            message.isOwn
-              ? "bg-brand-gradient text-white rounded-br-sm"
-              : "bg-surface-1 border border-border-default text-text-primary rounded-bl-sm"
-          )}
-          onContextMenu={handleContextMenu}
+      <div className={`relative max-w-[70%] flex flex-col ${isOut ? "items-end" : "items-start"}`}>
+        <div 
+          className={`px-4 py-3 rounded-2xl shadow-sm relative ${
+            isOut 
+              ? "brand-grad text-white rounded-tr-sm" 
+              : "bg-surface border border-gray-100 text-gray-900 rounded-tl-sm"
+          }`}
         >
-          <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{message.content}</p>
-          <div className={cn("flex items-center justify-end gap-1 mt-1 text-[10px]", message.isOwn ? "text-white/70" : "text-text-tertiary")}>
-            {message.edited && <span className="italic mr-1">edited</span>}
-            <span>{message.time}</span>
-            {message.isOwn && message.status && statusIcon[message.status]}
+          {replyTo && (
+            <ReplyQuote 
+              authorName={replyTo.authorName} 
+              content={replyTo.content} 
+              isOutbound={isOut} 
+            />
+          )}
+          
+          <div className="text-[15px] leading-relaxed whitespace-pre-wrap">{content}</div>
+          
+          <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] ${isOut ? "text-white/80" : "text-gray-400"}`}>
+            <span>{time}</span>
+            {isOut && (
+              <span className="ml-0.5">
+                {status === "sending" && <Check size={14} className="opacity-50" />}
+                {status === "sent" && <Check size={14} />}
+                {status === "read" && <CheckCheck size={14} className="text-orange-200" />}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Hover actions for own */}
-        {message.isOwn && (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mb-1">
-            <button onClick={() => onReply(message)} className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-3 transition-colors">
-              <Reply className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={(e) => setContextMenu({ x: e.clientX, y: e.clientY })} className="w-7 h-7 rounded-full bg-surface-2 flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-surface-3 transition-colors">
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
+        {reactions.length > 0 && (
+          <div className={`flex flex-wrap gap-1 mt-1 z-10 ${isOut ? "-mr-2" : "-ml-2"}`}>
+            {reactions.map((r, i) => (
+              <ReactionPill 
+                key={i} 
+                emoji={r.emoji} 
+                count={r.count} 
+                active={r.active} 
+                onClick={() => onReact?.(r.emoji)}
+              />
+            ))}
           </div>
         )}
       </div>
-
-      <MessageReactions
-        reactions={message.reactions ?? []}
-        onReact={(emoji) => onReact(message.id, emoji)}
-        isOwn={message.isOwn}
-      />
-
-      <AnimatePresence>
-        {contextMenu && (
-          <MessageContextMenu
-            isOwn={message.isOwn}
-            position={contextMenu}
-            onClose={() => setContextMenu(null)}
-            onReply={() => onReply(message)}
-            onReact={(emoji) => onReact(message.id, emoji)}
-            onCopy={handleCopy}
-            onDelete={() => onDelete(message.id)}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
+    </div>
+  );
 }

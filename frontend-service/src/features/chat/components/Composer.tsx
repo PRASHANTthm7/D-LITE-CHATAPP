@@ -1,109 +1,75 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Plus, Smile, Mic, Send, X } from "lucide-react"
-import { Button } from "@/shared/ui/primitives/button"
-import { Textarea } from "@/shared/ui/primitives/textarea"
-import { ReplyPreview } from "./ReplyPreview"
-import type { Message } from "@/features/chat/hooks/use-chat-messages"
+import React, { useState, useRef, useEffect } from "react";
+import { Plus, Smile, Send } from "lucide-react";
+import { IconButton } from "@/shared/components/IconButton";
+import { motion } from "framer-motion";
 
-const QUICK_EMOJIS = ["😊", "😂", "❤️", "👍", "🎉", "🔥", "😢", "😮", "🙏", "💯", "✅", "👀",
-  "😎", "🤔", "😅", "💪", "🫡", "🥳", "😍", "🤝", "😤", "🙌", "⚡", "✨"]
-
-interface ComposerProps {
-  replyTo?: Message | null
-  onCancelReply?: () => void
-  onSend?: (content: string) => void
+export interface ComposerProps {
+  onSend: (text: string) => void;
+  placeholder?: string;
 }
 
-export function Composer({ replyTo, onCancelReply, onSend }: ComposerProps) {
-  const [message, setMessage] = React.useState("")
-  const [showEmoji, setShowEmoji] = React.useState(false)
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null)
+export function Composer({ onSend, placeholder = "Type a message..." }: ComposerProps) {
+  const [text, setText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  }, [text]);
 
   const handleSend = () => {
-    if (!message.trim()) return
-    onSend?.(message.trim())
-    setMessage("")
-    textareaRef.current?.focus()
-  }
-
-  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+    if (text.trim()) {
+      onSend(text.trim());
+      setText("");
     }
-    if (e.key === "Escape" && replyTo) onCancelReply?.()
-  }
+  };
 
-  const insertEmoji = (emoji: string) => {
-    setMessage((prev) => prev + emoji)
-    textareaRef.current?.focus()
-  }
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   return (
-    <div className="border-t border-border-default bg-surface-1">
-      {replyTo && (
-        <ReplyPreview
-          sender={replyTo.isOwn ? "You" : "Peer"}
-          content={replyTo.content}
-          onCancel={onCancelReply}
-        />
-      )}
+    <div className="p-4 bg-surface border-t border-gray-100 flex items-end gap-2">
+      <IconButton size="md" variant="ghost" className="text-gray-400 hover:text-brand-500 mb-1">
+        <Plus size={22} />
+      </IconButton>
 
-      {showEmoji && (
-        <div className="p-3 border-t border-border-subtle">
-          <div className="grid grid-cols-12 gap-1">
-            {QUICK_EMOJIS.map((e) => (
-              <button key={e} className="text-xl hover:scale-125 transition-transform" onClick={() => insertEmoji(e)}>
-                {e}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-end gap-2 bg-surface-2 m-3 p-2 rounded-2xl border border-border-default focus-within:border-brand-primary transition-colors">
-        <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full text-text-secondary">
-          <Plus className="w-5 h-5" />
-        </Button>
-
-        <Textarea
+      <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl flex items-end overflow-hidden focus-within:border-brand-300 focus-within:ring-2 focus-within:ring-brand-100 transition-shadow transition-colors">
+        <IconButton size="sm" variant="ghost" className="text-gray-400 hover:text-brand-500 mb-1.5 ml-1">
+          <Smile size={20} />
+        </IconButton>
+        
+        <textarea
           ref={textareaRef}
-          variant="ghost"
-          className="flex-1 py-2 min-h-[40px] text-[15px] leading-relaxed"
-          placeholder="Message..."
-          value={message}
-          onChange={(e) => setMessage((e.target as HTMLTextAreaElement).value)}
-          onKeyDown={handleKey}
-          aria-label="Message input"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="w-full bg-transparent py-3 px-2 outline-none resize-none min-h-[44px] max-h-[120px] text-[15px] custom-scrollbar"
+          rows={1}
         />
-
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-10 w-10 shrink-0 rounded-full transition-colors ${showEmoji ? "text-brand-primary bg-brand-primary-soft" : "text-text-secondary"}`}
-            onClick={() => setShowEmoji(!showEmoji)}
-          >
-            <Smile className="w-5 h-5" />
-          </Button>
-
-          {message.trim() ? (
-            <Button
-              size="icon"
-              className="h-10 w-10 shrink-0 rounded-full bg-brand-gradient shadow-accent text-white hover:scale-105"
-              onClick={handleSend}
-            >
-              <Send className="w-4 h-4 ml-0.5" />
-            </Button>
-          ) : (
-            <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full text-text-secondary">
-              <Mic className="w-5 h-5" />
-            </Button>
-          )}
-        </div>
       </div>
+
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleSend}
+        disabled={!text.trim()}
+        className={`w-11 h-11 mb-1 rounded-full flex items-center justify-center transition-all ${
+          text.trim() 
+            ? "brand-grad text-white send-btn-glow" 
+            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+        }`}
+      >
+        <Send size={18} className="ml-1" />
+      </motion.button>
     </div>
-  )
+  );
 }

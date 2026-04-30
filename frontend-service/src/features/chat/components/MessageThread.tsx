@@ -1,54 +1,45 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { MessageBubble } from "./MessageBubble"
-import { ReplyPreview } from "./ReplyPreview"
-import { useChatMessages, type Message } from "@/features/chat/hooks/use-chat-messages"
-import { EmptyState } from "@/shared/ui/feedback/empty-state"
-import { MessageCircle } from "lucide-react"
+import React, { useRef, useEffect } from "react";
+import { MessageBubble, MessageBubbleProps } from "./MessageBubble";
+import { TypingIndicator } from "./TypingIndicator";
 
-interface MessageThreadProps {
-  peerId: string
-  replyTo: Message | null
-  setReplyTo: (msg: Message | null) => void
+export interface ThreadMessage extends MessageBubbleProps {
+  id: string;
+  dateStr?: string; // Optional separator before this message
 }
 
-export function MessageThread({ peerId, replyTo, setReplyTo }: MessageThreadProps) {
-  const bottomRef = React.useRef<HTMLDivElement>(null)
-  const { messages, addReaction, deleteMessage } = useChatMessages(peerId)
+export interface MessageThreadProps {
+  messages: ThreadMessage[];
+  typingUser?: { name: string; initials: string };
+}
 
-  React.useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+export function MessageThread({ messages, typingUser }: MessageThreadProps) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typingUser]);
 
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col relative">
-      <div className="p-4 flex flex-col flex-1">
-        {messages.length === 0 ? (
-          <EmptyState
-            illustration={<MessageCircle className="w-16 h-16" />}
-            title="No messages yet"
-            description="Start the conversation by saying hello!"
-            className="flex-1 justify-center"
-          />
-        ) : (
-          <>
-            <div className="text-center my-6">
-              <span className="bg-surface-2 text-text-secondary text-xs px-3 py-1 rounded-full font-medium">Today</span>
+    <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+      {messages.map((msg) => (
+        <React.Fragment key={msg.id}>
+          {msg.dateStr && (
+            <div className="flex justify-center my-6">
+              <span className="bg-gray-100 text-gray-500 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+                {msg.dateStr}
+              </span>
             </div>
-            {messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                onReply={setReplyTo}
-                onReact={addReaction}
-                onDelete={deleteMessage}
-              />
-            ))}
-          </>
-        )}
-        <div ref={bottomRef} />
-      </div>
+          )}
+          <MessageBubble {...msg} />
+        </React.Fragment>
+      ))}
+
+      {typingUser && (
+        <TypingIndicator name={typingUser.name} initials={typingUser.initials} />
+      )}
+      <div ref={bottomRef} className="h-4" />
     </div>
-  )
+  );
 }
