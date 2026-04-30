@@ -1,37 +1,52 @@
-"use client"
+"use client";
 
-import { getPasswordStrength } from "@/shared/utils/validate"
-import { cn } from "@/shared/utils/cn"
+import React, { useMemo } from "react";
+import { motion } from "framer-motion";
 
-export function PasswordStrengthMeter({ password }: { password: string }) {
-  const { score, feedback, label, color } = getPasswordStrength(password)
+export interface PasswordStrengthMeterProps {
+  password?: string;
+}
 
-  if (!password) return null
+export function PasswordStrengthMeter({ password = "" }: PasswordStrengthMeterProps) {
+  const strength = useMemo(() => {
+    let score = 0;
+    if (!password) return score;
+
+    if (password.length > 8) score += 1;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    return score; // 0 to 4
+  }, [password]);
+
+  const labels = ["Very Weak", "Weak", "Fair", "Strong", "Very Strong"];
+  const colors = ["bg-gray-200", "bg-danger", "bg-warn", "bg-success", "bg-brand-500"];
+
+  const activeColor = (score: number) => {
+    if (score === 0) return colors[0];
+    if (score === 1) return colors[1];
+    if (score === 2) return colors[2];
+    if (score === 3) return colors[3];
+    return colors[4];
+  };
 
   return (
-    <div className="mt-2 space-y-1.5">
-      <div className="flex gap-1">
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className={cn(
-              "h-1 flex-1 rounded-full transition-all duration-300",
-              i <= score ? color : "bg-surface-3"
-            )}
+    <div className="mt-2">
+      <div className="flex gap-1 h-1.5 mb-1.5">
+        {[1, 2, 3, 4].map((level) => (
+          <motion.div
+            key={level}
+            layout
+            className={`flex-1 rounded-full transition-colors duration-300 ${
+              strength >= level ? activeColor(strength) : "bg-gray-200"
+            }`}
           />
         ))}
       </div>
-      <div className="flex justify-between items-center">
-        <p className="text-xs text-text-tertiary">{feedback}</p>
-        {label && (
-          <span className={cn(
-            "text-[10px] font-bold uppercase tracking-wide",
-            score <= 1 ? "text-danger" : score === 2 ? "text-warning" : score === 3 ? "text-info" : "text-success"
-          )}>
-            {label}
-          </span>
-        )}
+      <div className="text-xs text-gray-500 text-right">
+        {password ? labels[strength] : "Password strength"}
       </div>
     </div>
-  )
+  );
 }

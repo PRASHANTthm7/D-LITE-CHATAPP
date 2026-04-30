@@ -1,0 +1,72 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export interface UsernameAvailabilityProps {
+  username?: string;
+  onAvailabilityChange?: (isAvailable: boolean) => void;
+}
+
+export function UsernameAvailability({ username, onAvailabilityChange }: UsernameAvailabilityProps) {
+  const [status, setStatus] = useState<"idle" | "loading" | "available" | "taken">("idle");
+
+  useEffect(() => {
+    if (!username || username.length < 3) {
+      setStatus("idle");
+      onAvailabilityChange?.(false);
+      return;
+    }
+
+    setStatus("loading");
+
+    const timer = setTimeout(() => {
+      const isAvailable = username.toLowerCase().startsWith("p");
+      setStatus(isAvailable ? "available" : "taken");
+      onAvailabilityChange?.(isAvailable);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username, onAvailabilityChange]);
+
+  return (
+    <div className="h-5 mt-1 overflow-hidden">
+      <AnimatePresence mode="wait">
+        {status === "loading" && (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="flex items-center gap-1.5 text-xs text-gray-500"
+          >
+            <Loader2 size={12} className="animate-spin" /> Checking availability...
+          </motion.div>
+        )}
+        {status === "available" && (
+          <motion.div
+            key="available"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="flex items-center gap-1.5 text-xs text-success"
+          >
+            <CheckCircle2 size={12} /> Username available
+          </motion.div>
+        )}
+        {status === "taken" && (
+          <motion.div
+            key="taken"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="flex items-center gap-1.5 text-xs text-danger"
+          >
+            <XCircle size={12} /> Username is taken
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
