@@ -1,42 +1,49 @@
 "use client";
 
-import { Avatar } from "@/shared/ui/primitives/avatar";
-import { MoreHorizontal } from "lucide-react";
+import React from "react";
+import { User } from "@/features/dashboard/lib/mock-data";
+import { Avatar } from "@/shared/components/Avatar";
+import { RoleBadge } from "./RoleBadge";
 
-export function MembersPanel({ groupId }: { groupId: string }) {
-  const members = [
-    { id: "1", name: "Alice Smith", role: "Owner", online: true },
-    { id: "2", name: "Bob Johnson", role: "Admin", online: true },
-    { id: "3", name: "Charlie Davis", role: "Member", online: false },
-    { id: "4", name: "Diana Prince", role: "Member", online: true },
-  ];
+export interface MembersPanelProps {
+  members: (User & { role?: "owner" | "admin" | "mod" | "member" })[];
+}
+
+export function MembersPanel({ members }: MembersPanelProps) {
+  const online = members.filter(m => m.isOnline);
+  const offline = members.filter(m => !m.isOnline);
+
+  const renderMember = (m: User & { role?: string }) => (
+    <div key={m.id} className="flex items-center gap-3 py-2 cursor-pointer hover:bg-gray-50 px-2 rounded-lg -mx-2 transition-colors">
+      <Avatar initials={m.initials} online={m.isOnline} size="sm" />
+      <div className="flex-1 min-w-0">
+        <h5 className="text-sm font-semibold text-gray-900 truncate">{m.name}</h5>
+        <div className="text-[10px] text-gray-500">
+          {m.isOnline ? "Online" : "Last seen recently"}
+        </div>
+      </div>
+      {m.role && m.role !== "member" && <RoleBadge role={m.role as any} />}
+    </div>
+  );
 
   return (
-    <div className="w-[280px] border-l border-border-default bg-surface-1 flex-shrink-0 flex flex-col h-full hidden lg:flex z-10">
-      <div className="p-4 border-b border-border-default h-16 flex items-center">
-        <h3 className="font-bold text-sm">Group Members</h3>
+    <div className="w-[220px] h-full border-l border-gray-100 bg-surface flex flex-col shrink-0">
+      <div className="p-4 border-b border-gray-100">
+        <h3 className="font-bold text-gray-900 text-sm">Members ({members.length})</h3>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {members.map(member => (
-          <div key={member.id} className="flex items-center justify-between group">
-            <div className="flex items-center gap-3">
-              <Avatar src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} status={member.online ? "online" : undefined} size="sm" />
-              <div>
-                <p className="text-sm font-medium leading-none mb-1">{member.name}</p>
-                {member.role !== "Member" && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                    member.role === 'Owner' ? 'bg-[#a855f7]/20 text-[#a855f7]' : 'bg-warning/20 text-warning'
-                  }`}>
-                    {member.role}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button className="text-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+        <div className="mb-6">
+          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Online — {online.length}</h4>
+          <div className="space-y-1">
+            {online.map(renderMember)}
           </div>
-        ))}
+        </div>
+        <div>
+          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Offline — {offline.length}</h4>
+          <div className="space-y-1">
+            {offline.map(renderMember)}
+          </div>
+        </div>
       </div>
     </div>
   );

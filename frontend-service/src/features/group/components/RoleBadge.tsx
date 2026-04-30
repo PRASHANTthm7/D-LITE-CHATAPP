@@ -1,31 +1,27 @@
-"use client"
+import React from "react";
 
-import { Badge } from "@/shared/ui/primitives/badge"
-import { cn } from "@/shared/utils/cn"
-
-type Role = "Owner" | "Admin" | "Moderator" | "Member"
-
-interface RoleBadgeProps {
-  role: Role
-  className?: string
+export interface RoleBadgeProps {
+  role: "owner" | "admin" | "mod" | "member";
 }
 
-const styles: Record<Role, string> = {
-  Owner:     "text-[#a855f7] border-[#a855f7]/30 bg-[#a855f7]/10",
-  Admin:     "text-warning border-warning/30 bg-warning/10",
-  Moderator: "text-info border-info/30 bg-info/10",
-  Member:    "",
-}
+export function RoleBadge({ role }: RoleBadgeProps) {
+  if (role === "member") return null;
 
-export function RoleBadge({ role, className }: RoleBadgeProps) {
-  if (role === "Member") return null
+  const styles = {
+    owner: "bg-gradient-to-r from-purple-500 to-pink-500 text-white",
+    admin: "bg-gradient-to-r from-yellow-400 to-orange-500 text-white",
+    mod: "bg-gradient-to-r from-blue-400 to-cyan-500 text-white",
+  };
+
+  const labels = {
+    owner: "Owner",
+    admin: "Admin",
+    mod: "Mod",
+  };
+
   return (
-    <span className={cn(
-      "inline-flex items-center text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 rounded border",
-      styles[role],
-      className
-    )}>
-      {role}
+    <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-sm ${styles[role]}`}>
+      {labels[role]}
     </span>
-  )
+  );
 }
