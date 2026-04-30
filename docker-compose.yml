@@ -6,12 +6,14 @@ services:
       context: ./frontend-service
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
       - NODE_ENV=development
+    command: sh -c "npm install && npm run dev"
     volumes:
       - ./frontend-service:/app
       - /app/node_modules
+      - /app/.next
     depends_on:
       - core-backend
       - realtime-service
@@ -26,6 +28,7 @@ services:
       - "5040:5040"
     environment:
       - ENV=development
+    command: uvicorn main:app --host 0.0.0.0 --port 5040 --reload
     volumes:
       - ./core-backend:/app
 
@@ -37,6 +40,7 @@ services:
       - "5050:5050"
     environment:
       - ENV=development
+    command: uvicorn main:socket_app --host 0.0.0.0 --port 5050 --reload
     volumes:
       - ./realtime-service:/app
 
@@ -48,6 +52,7 @@ services:
       - "5060:5060"
     environment:
       - NODE_ENV=development
+    command: sh -c "npm install && npm run dev"
     volumes:
       - ./call-service:/app
       - /app/node_modules
@@ -60,5 +65,7 @@ services:
       - "5070:5070"
     environment:
       - ENV=development
+    command: uvicorn main:app --host 0.0.0.0 --port 5070 --reload
     volumes:
       - ./ai-backend:/app
+
