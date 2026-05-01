@@ -21,10 +21,17 @@ export function UsernameAvailability({ username, onAvailabilityChange }: Usernam
 
     setStatus("loading");
 
-    const timer = setTimeout(() => {
-      const isAvailable = username.toLowerCase().startsWith("p");
-      setStatus(isAvailable ? "available" : "taken");
-      onAvailabilityChange?.(isAvailable);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-username?username=${encodeURIComponent(username)}`);
+        const data = await res.json();
+        const isAvailable = data.available ?? true;
+        setStatus(isAvailable ? "available" : "taken");
+        onAvailabilityChange?.(isAvailable);
+      } catch {
+        setStatus("idle");
+        onAvailabilityChange?.(false);
+      }
     }, 500);
 
     return () => clearTimeout(timer);

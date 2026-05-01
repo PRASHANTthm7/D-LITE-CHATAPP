@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/shared/components/Avatar";
@@ -20,8 +19,7 @@ export function ChatListItem({ chat }: { chat: ChatPreview }) {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-0.5">
           <h4 className="text-sm font-semibold themed-text truncate">{chat.user.name}</h4>
-            {chat.time}
-          </span>
+          <span className="text-xs themed-text-3 shrink-0">{chat.time}</span>
         </div>
         <div className="flex items-center justify-between gap-2">
           {chat.isTyping ? (

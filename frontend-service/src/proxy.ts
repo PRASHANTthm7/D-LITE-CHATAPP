@@ -1,14 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy_key',
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -31,16 +31,18 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
-                      request.nextUrl.pathname.startsWith('/register') ||
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
+                      request.nextUrl.pathname.startsWith('/signup') ||
                       request.nextUrl.pathname.startsWith('/forgot-password') ||
                       request.nextUrl.pathname.startsWith('/reset-password')
-                      
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
+
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') ||
                            request.nextUrl.pathname.startsWith('/chat') ||
                            request.nextUrl.pathname.startsWith('/groups') ||
                            request.nextUrl.pathname.startsWith('/call') ||
-                           request.nextUrl.pathname.startsWith('/assistant') ||
+                           request.nextUrl.pathname.startsWith('/calls') ||
+                           request.nextUrl.pathname.startsWith('/ai') ||
+                           request.nextUrl.pathname.startsWith('/notifications') ||
                            request.nextUrl.pathname.startsWith('/settings')
 
   if (isProtectedRoute && !user) {

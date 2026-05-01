@@ -1,14 +1,19 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare, Users, Phone, Sparkles, Settings } from "lucide-react";
+import { MessageSquare, Users, Phone, Sparkles, Settings, LogOut } from "lucide-react";
 import { Avatar } from "@/shared/components/Avatar";
 import { Badge } from "@/shared/components/Badge";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
+import { signOut } from "@/core/auth/actions";
 
-export function IconRail() {
+interface IconRailProps {
+  userInitials?: string;
+  userAvatarUrl?: string;
+}
+
+export function IconRail({ userInitials = "DL", userAvatarUrl }: IconRailProps) {
   const pathname = usePathname();
 
   const navItems = [
@@ -29,14 +34,14 @@ export function IconRail() {
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
-            
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`relative flex items-center justify-center w-11 h-11 mx-auto rounded-xl transition-all ${
-                  isActive 
-                    ? "brand-grad text-white shadow-accent" 
+                  isActive
+                    ? "brand-grad text-white shadow-accent"
                     : "text-gray-400 hover:bg-gray-50 hover:text-gray-900"
                 }`}
                 title={item.label}
@@ -60,11 +65,29 @@ export function IconRail() {
           className={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${
             pathname.startsWith("/settings") ? "bg-gray-100 text-brand-600" : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
           }`}
+          title="Settings"
         >
           <Settings size={20} />
         </Link>
+
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="flex items-center justify-center w-11 h-11 rounded-xl transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
+            title="Sign out"
+          >
+            <LogOut size={20} />
+          </button>
+        </form>
+
         <Link href="/settings">
-          <Avatar initials="DL" online size="sm" className="hover:scale-105 transition-transform cursor-pointer" />
+          <Avatar
+            initials={userInitials}
+            src={userAvatarUrl}
+            online
+            size="sm"
+            className="hover:scale-105 transition-transform cursor-pointer"
+          />
         </Link>
       </div>
     </div>

@@ -1,16 +1,42 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { Button } from "@/shared/components/Button";
+import { createClient } from "@/core/auth/supabase-client";
 
 export function SocialButtons() {
+  const [loading, setLoading] = useState<"google" | "github" | null>(null);
+
+  const handleOAuth = async (provider: "google" | "github") => {
+    setLoading(provider);
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
   return (
     <div className="flex gap-4">
-      <Button variant="secondary" className="w-full flex-1" iconLeft={<GoogleIcon />}>
-        Google
+      <Button
+        variant="secondary"
+        className="w-full flex-1"
+        iconLeft={<GoogleIcon />}
+        onClick={() => handleOAuth("google")}
+        disabled={loading !== null}
+      >
+        {loading === "google" ? "Redirecting…" : "Google"}
       </Button>
-      <Button variant="secondary" className="w-full flex-1" iconLeft={<GitHubIcon />}>
-        GitHub
+      <Button
+        variant="secondary"
+        className="w-full flex-1"
+        iconLeft={<GitHubIcon />}
+        onClick={() => handleOAuth("github")}
+        disabled={loading !== null}
+      >
+        {loading === "github" ? "Redirecting…" : "GitHub"}
       </Button>
     </div>
   );
