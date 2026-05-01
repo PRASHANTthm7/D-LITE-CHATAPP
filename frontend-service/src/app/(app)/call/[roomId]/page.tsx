@@ -60,7 +60,7 @@ export default function CallPage() {
   }, [roomId, router]);
 
   return (
-    <div className="flex h-screen w-full bg-gray-950 overflow-hidden">
+    <div className="flex h-screen w-full themed-canvas overflow-hidden">
       <div 
         className="w-full h-full"
         ref={containerRef} 

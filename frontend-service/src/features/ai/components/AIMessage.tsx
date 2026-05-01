@@ -10,7 +10,7 @@ export function AIMessage({ children }: { children: React.ReactNode }) {
         <Sparkles size={14} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="bg-surface border border-brand-200/50 rounded-2xl rounded-tl-sm p-4 shadow-sm text-gray-800 leading-relaxed text-[15px]">
+        <div className="themed-surface border border-[var(--brand-200)]/50 rounded-2xl rounded-tl-sm p-4 shadow-card themed-text leading-relaxed text-[15px]">
           {children}
         </div>
       </div>

@@ -11,11 +11,11 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className = "", error, success, iconRight, iconLeft, ...props }, ref) => {
     const baseStyles =
-      "block w-full rounded-xl border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm bg-white px-4 py-2.5 transition-colors";
+      "block w-full rounded-xl themed-border shadow-sm focus:border-[var(--input-border-focus)] focus:ring-[var(--brand-500)] sm:text-sm themed-surface px-4 py-2.5 transition-colors themed-text";
     
-    let stateStyles = "border-gray-200 hover:border-gray-300";
-    if (error) stateStyles = "border-danger text-danger focus:border-danger focus:ring-danger";
-    else if (success) stateStyles = "border-success focus:border-success focus:ring-success";
+    let stateStyles = "themed-border hover:border-[var(--brand-400)]";
+    if (error) stateStyles = "border-[var(--danger)] text-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]";
+    else if (success) stateStyles = "border-[var(--success)] focus:border-[var(--success)] focus:ring-[var(--success)]";
 
     const hasLeftIcon = !!iconLeft;
     const hasRightIcon = !!iconRight || !!error || success;
@@ -23,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative">
         {hasLeftIcon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none themed-text-3">
             {iconLeft}
           </div>
         )}
@@ -41,11 +41,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ) : success ? (
               <CheckCircle2 className="h-5 w-5 text-success" />
             ) : (
-              <span className="text-gray-400">{iconRight}</span>
+              <span className="themed-text-3 pointer-events-auto">{iconRight}</span>
             )}
           </div>
         )}
-        {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+        {error && <p className="mt-1 text-sm text-[var(--danger)]">{error}</p>}
       </div>
     );
   }

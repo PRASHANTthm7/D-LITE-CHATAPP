@@ -35,7 +35,7 @@ export function MessageBubble({
           <button 
             key={emoji} 
             onClick={() => onReact?.(emoji)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-surface shadow-sm border border-gray-100 hover:scale-110 transition-transform text-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-full themed-surface shadow-sm themed-border hover:scale-110 transition-transform text-sm"
           >
             {emoji}
           </button>
@@ -44,10 +44,10 @@ export function MessageBubble({
 
       <div className={`relative max-w-[70%] flex flex-col ${isOut ? "items-end" : "items-start"}`}>
         <div 
-          className={`px-4 py-3 rounded-2xl shadow-sm relative ${
+          className={`px-4 py-3 rounded-2xl relative ${
             isOut 
-              ? "brand-grad text-white rounded-tr-sm" 
-              : "bg-surface border border-gray-100 text-gray-900 rounded-tl-sm"
+              ? "themed-msg-out rounded-tr-sm" 
+              : "themed-msg-in rounded-tl-sm"
           }`}
         >
           {replyTo && (
@@ -60,13 +60,13 @@ export function MessageBubble({
           
           <div className="text-[15px] leading-relaxed whitespace-pre-wrap">{content}</div>
           
-          <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] ${isOut ? "text-white/80" : "text-gray-400"}`}>
+          <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] ${isOut ? "text-white/80" : "themed-text-3"}`}>
             <span>{time}</span>
             {isOut && (
               <span className="ml-0.5">
                 {status === "sending" && <Check size={14} className="opacity-50" />}
                 {status === "sent" && <Check size={14} />}
-                {status === "read" && <CheckCheck size={14} className="text-orange-200" />}
+                {status === "read" && <CheckCheck size={14} className="text-[var(--brand-200)]" />}
               </span>
             )}
           </div>

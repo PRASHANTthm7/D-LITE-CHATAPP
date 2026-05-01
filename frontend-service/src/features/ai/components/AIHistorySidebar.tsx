@@ -13,9 +13,9 @@ export function AIHistorySidebar() {
   ];
 
   return (
-    <div className="w-[260px] h-full border-r border-gray-100 bg-surface flex flex-col shrink-0">
-      <div className="p-4 border-b border-gray-100">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">AI Chats</h2>
+    <div className="w-[260px] h-full border-r themed-border themed-surface flex flex-col shrink-0">
+      <div className="p-4 border-b themed-border">
+        <h2 className="text-lg font-bold themed-text mb-4">AI Chats</h2>
         <Button variant="primary" className="w-full justify-start" iconLeft={<Plus size={16} />}>
           New chat
         </Button>
@@ -27,13 +27,13 @@ export function AIHistorySidebar() {
             key={i}
             onClick={() => setActive(i)}
             className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-              active === i ? "bg-brand-50 text-brand-700 font-medium" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              active === i ? "bg-[var(--row-active-bg)] text-[var(--brand-700)] font-medium" : "themed-text-2 hover:bg-[var(--row-hover-bg)] hover:themed-text"
             }`}
           >
-            <MessageSquare size={16} className={active === i ? "text-brand-500" : "text-gray-400"} />
+            <MessageSquare size={16} className={active === i ? "text-[var(--brand-500)]" : "themed-text-3"} />
             <div className="flex-1 min-w-0">
               <div className="text-sm truncate">{item.title}</div>
-              {active === i && <div className="text-[10px] text-brand-400 mt-0.5">{item.date}</div>}
+              {active === i && <div className="text-[10px] text-[var(--brand-400)] mt-0.5">{item.date}</div>}
             </div>
           </div>
         ))}

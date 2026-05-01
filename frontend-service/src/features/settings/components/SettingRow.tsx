@@ -11,10 +11,10 @@ export interface SettingRowProps {
 
 export function SettingRow({ label, description, control, checked, onChange }: SettingRowProps) {
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0">
+    <div className="flex items-center justify-between py-4 border-b themed-border last:border-0">
       <div className="pr-8">
-        <div className="font-semibold text-gray-900 text-sm mb-1">{label}</div>
-        {description && <div className="text-xs text-gray-500">{description}</div>}
+        <div className="font-semibold themed-text text-sm mb-1">{label}</div>
+        {description && <div className="text-xs themed-text-3">{description}</div>}
       </div>
       <div className="shrink-0">
         {control || <Toggle checked={checked || false} onChange={onChange || (() => {})} />}

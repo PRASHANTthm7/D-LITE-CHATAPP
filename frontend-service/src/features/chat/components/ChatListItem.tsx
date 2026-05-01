@@ -14,13 +14,12 @@ export function ChatListItem({ chat }: { chat: ChatPreview }) {
   return (
     <Link 
       href={`/chat/${chat.id}`}
-      className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${isActive ? "bg-brand-50" : "hover:bg-gray-50"}`}
+      className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${isActive ? "bg-[var(--row-active-bg)] border-l-[3px] border-[var(--row-active-border)]" : "hover:bg-[var(--row-hover-bg)]"}`}
     >
       <Avatar initials={chat.user.initials} online={chat.user.isOnline} verified={chat.user.isVerified} size="md" />
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-0.5">
-          <h4 className="text-sm font-semibold text-gray-900 truncate">{chat.user.name}</h4>
-          <span className={`text-xs whitespace-nowrap ml-2 ${isActive ? "text-brand-600" : "text-gray-400"}`}>
+          <h4 className="text-sm font-semibold themed-text truncate">{chat.user.name}</h4>
             {chat.time}
           </span>
         </div>
@@ -28,7 +27,7 @@ export function ChatListItem({ chat }: { chat: ChatPreview }) {
           {chat.isTyping ? (
             <span className="text-xs text-brand-500 font-medium italic">typing...</span>
           ) : (
-            <p className={`text-sm truncate ${isActive || chat.unreadCount > 0 ? "text-gray-900 font-medium" : "text-gray-500"}`}>
+            <p className={`text-sm truncate ${isActive || chat.unreadCount > 0 ? "themed-text font-medium" : "themed-text-3"}`}>
               {chat.lastMessage}
             </p>
           )}

@@ -20,34 +20,34 @@ export function NotificationItem({ type, user, content, time, isRead, groupName 
   };
 
   const bgColors = {
-    mention: "bg-accent-pink",
-    reply: "bg-brand-500",
-    missed_call: "bg-danger",
+    mention: "bg-[var(--accent-pink)]",
+    reply: "bg-[var(--brand-500)]",
+    missed_call: "bg-[var(--danger)]",
   };
 
   return (
     <div className={`p-4 rounded-xl border flex items-start gap-4 cursor-pointer transition-all ${
-      isRead ? "bg-surface border-gray-100 opacity-70" : "bg-brand-50 border-brand-100 shadow-sm"
+      isRead ? "themed-surface border-themed-border opacity-70" : "bg-[var(--row-active-bg)] border-[var(--brand-100)] shadow-card"
     }`}>
       <div className="relative mt-1">
         <Avatar initials={user.initials} size="md" />
-        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-surface ${bgColors[type]}`}>
+        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 themed-surface ${bgColors[type]}`}>
           {icons[type]}
         </div>
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between mb-0.5">
-          <span className="font-semibold text-gray-900 text-sm">
+          <span className="font-semibold themed-text text-sm">
             {user.name}
-            {groupName && <span className="text-gray-500 font-normal"> in {groupName}</span>}
+            {groupName && <span className="themed-text-2 font-normal"> in {groupName}</span>}
           </span>
-          <span className="text-xs text-gray-400">{time}</span>
+          <span className="text-xs themed-text-3">{time}</span>
         </div>
-        <p className={`text-sm ${isRead ? "text-gray-500" : "text-gray-800 font-medium"}`}>
+        <p className={`text-sm ${isRead ? "themed-text-3" : "themed-text font-medium"}`}>
           {content}
         </p>
       </div>
-      {!isRead && <div className="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0 mt-2" />}
+      {!isRead && <div className="w-2.5 h-2.5 rounded-full bg-[var(--brand-500)] shrink-0 mt-2 shadow-glow" />}
     </div>
   );
 }

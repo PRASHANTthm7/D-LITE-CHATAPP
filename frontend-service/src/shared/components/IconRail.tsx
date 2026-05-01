@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { MessageSquare, Users, Phone, Sparkles, Settings } from "lucide-react";
 import { Avatar } from "@/shared/components/Avatar";
 import { Badge } from "@/shared/components/Badge";
+import { ThemeToggle } from "@/shared/components/ThemeToggle";
 
 export function IconRail() {
   const pathname = usePathname();
@@ -18,7 +19,7 @@ export function IconRail() {
   ];
 
   return (
-    <div className="w-[60px] h-screen bg-surface border-r border-gray-100 flex flex-col items-center py-4 justify-between shrink-0">
+    <div className="w-[60px] h-screen themed-surface border-r themed-border flex flex-col items-center py-4 justify-between shrink-0">
       <div className="flex flex-col items-center gap-6 w-full">
         <Link href="/dashboard" className="w-10 h-10 rounded-xl brand-grad flex items-center justify-center shadow-accent mb-2">
           <MessageSquare size={20} className="text-white" />
@@ -53,6 +54,7 @@ export function IconRail() {
       </div>
 
       <div className="flex flex-col items-center gap-4 w-full">
+        <ThemeToggle />
         <Link
           href="/settings"
           className={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${

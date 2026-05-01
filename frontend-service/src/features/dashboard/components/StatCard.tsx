@@ -42,10 +42,10 @@ export function StatCard({ label, value, delta, icon, iconColorClass = "text-bra
   return (
     <motion.div 
       whileHover={{ y: -4, scale: 1.01 }}
-      className="bg-surface border border-gray-100 rounded-2xl p-5 shadow-sm transition-shadow hover:shadow-md"
+      className="themed-surface border themed-border rounded-2xl p-5 shadow-card transition-shadow hover:shadow-elevated"
     >
       <div className="flex justify-between items-start mb-4">
-        <div className={`p-2.5 rounded-xl bg-gray-50 border border-gray-100 ${iconColorClass}`}>
+        <div className={`p-2.5 rounded-xl themed-surface-2 border themed-border ${iconColorClass}`}>
           {icon}
         </div>
         <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${isPositive ? "text-success bg-green-50" : "text-danger bg-red-50"}`}>
@@ -54,8 +54,8 @@ export function StatCard({ label, value, delta, icon, iconColorClass = "text-bra
         </div>
       </div>
       <div>
-        <p className="text-sm font-medium text-gray-500 mb-1">{label}</p>
-        <h3 className="text-2xl font-bold text-gray-900">
+        <p className="text-sm font-medium themed-text-3 mb-1">{label}</p>
+        <h3 className="text-2xl font-bold themed-text">
           {count}{suffix}
         </h3>
       </div>

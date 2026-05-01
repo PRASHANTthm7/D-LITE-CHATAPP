@@ -44,23 +44,23 @@ export function AIComposer({ onSend, value = "", onChange }: AIComposerProps) {
   };
 
   return (
-    <div className="px-6 py-4 bg-surface border-t border-gray-100 flex flex-col">
+    <div className="px-6 py-4 themed-surface border-t themed-border flex flex-col">
       <div className="flex items-end gap-2 max-w-4xl mx-auto w-full">
-        <IconButton size="md" variant="ghost" className="text-gray-400 hover:text-brand-500 mb-1">
+        <IconButton size="md" variant="ghost" className="themed-text-3 hover:text-[var(--brand-text)] mb-1">
           <Paperclip size={20} />
         </IconButton>
 
-        <div className="flex-1 bg-white border-2 border-brand-100 rounded-2xl flex items-end overflow-hidden focus-within:border-brand-400 focus-within:ring-4 focus-within:ring-brand-50 transition-all shadow-sm">
+        <div className="flex-1 themed-surface border-2 border-[var(--brand-100)] rounded-2xl flex items-end overflow-hidden focus-within:border-[var(--brand-400)] focus-within:ring-4 focus-within:ring-[var(--brand-50)] transition-all shadow-card">
           <textarea
             ref={textareaRef}
             value={text}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             placeholder="Ask anything... or use ✨ for actions"
-            className="w-full bg-transparent py-3.5 px-4 outline-none resize-none min-h-[52px] max-h-[120px] text-[15px] custom-scrollbar text-gray-900"
+            className="w-full bg-transparent py-3.5 px-4 outline-none resize-none min-h-[52px] max-h-[120px] text-[15px] custom-scrollbar themed-text"
             rows={1}
           />
-          <IconButton size="sm" variant="ghost" className="text-gray-400 hover:text-brand-500 mb-1.5 mr-1">
+          <IconButton size="sm" variant="ghost" className="themed-text-3 hover:text-[var(--brand-text)] mb-1.5 mr-1">
             <Mic size={20} />
           </IconButton>
         </div>
@@ -72,14 +72,14 @@ export function AIComposer({ onSend, value = "", onChange }: AIComposerProps) {
           disabled={!text.trim()}
           className={`w-12 h-12 mb-0.5 rounded-xl flex items-center justify-center transition-all ${
             text.trim() 
-              ? "brand-grad text-white shadow-accent" 
-              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              ? "brand-grad text-white shadow-glow" 
+              : "themed-surface-2 themed-text-3 cursor-not-allowed"
           }`}
         >
           <Send size={18} className="ml-0.5" />
         </motion.button>
       </div>
-      <div className="text-center mt-3 text-[11px] text-gray-400">
+      <div className="text-center mt-3 text-[11px] themed-text-3">
         AI can make mistakes. Verify important information.
       </div>
     </div>

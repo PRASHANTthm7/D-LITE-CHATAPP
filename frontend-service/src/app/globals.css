@@ -31,27 +31,266 @@
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ============================================
+   THEME TOKENS — LIGHT (Yellow→Orange Sunshine)
+   ============================================ */
+:root,
+[data-theme="light"] {
+  /* Brand gradient (yellow → orange → deep orange) */
+  --grad-brand: linear-gradient(135deg, #facc15 0%, #f97316 50%, #ea580c 100%);
+  --grad-brand-soft: linear-gradient(135deg, #fef9c3 0%, #fed7aa 50%, #fdba74 100%);
+
+  --brand-50: #fffbeb;
+  --brand-100: #fef3c7;
+  --brand-200: #fde68a;
+  --brand-400: #facc15;
+  --brand-500: #f97316;
+  --brand-600: #ea580c;
+  --brand-700: #c2410c;
+  --brand-text: #ea580c;
+
+  --accent-pink: #ec4899;
+  --accent-purple: #a855f7;
+
+  /* Surfaces */
+  --canvas-bg: linear-gradient(135deg, #fffbeb 0%, #fff7ed 50%, #fef3c7 100%);
+  --canvas-solid: #fffbeb;
+  --surface: #ffffff;
+  --surface-2: #fef9e7;
+  --surface-elevated: #ffffff;
+
+  /* Text */
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-tertiary: #78716c;
+  --text-muted: #a8a29e;
+  --text-inverse: #ffffff;
+
+  /* Borders */
+  --border: #fde68a;
+  --border-soft: #fef3c7;
+  --border-strong: #fbbf24;
+
+  /* Shell (used by AppShell + IconRail) */
+  --shell-bg: linear-gradient(135deg, #fef3c7 0%, #fed7aa 50%, #fdba74 100%);
+  --rail-bg: rgba(255, 255, 255, 0.5);
+  --rail-border: rgba(234, 88, 12, 0.15);
+  --rail-text: rgba(28, 25, 23, 0.7);
+  --rail-text-active: #ea580c;
+
+  /* Message bubbles */
+  --msg-out-bg: linear-gradient(135deg, #f59e0b, #ea580c);
+  --msg-out-shadow: 0 4px 16px rgba(234, 88, 12, 0.25);
+  --msg-out-text: #ffffff;
+  --msg-in-bg: #ffffff;
+  --msg-in-text: #1c1917;
+  --msg-in-border: rgba(234, 88, 12, 0.08);
+
+  /* Header chrome */
+  --header-bg: #ffffff;
+  --header-border: #fef3c7;
+
+  /* Active row indicators */
+  --row-active-bg: linear-gradient(90deg, rgba(250, 204, 21, 0.18), transparent);
+  --row-active-border: #ea580c;
+  --row-hover-bg: rgba(250, 204, 21, 0.08);
+
+  /* Status colors */
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.1);
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+
+  /* Glass (call screens) */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(234, 88, 12, 0.15);
+
+  /* Call-screen background */
+  --call-bg: radial-gradient(circle at 30% 20%, #fef3c7 0%, transparent 50%),
+             radial-gradient(circle at 70% 80%, #fed7aa 0%, transparent 50%),
+             #fffbeb;
+  --call-text: #1c1917;
+  --call-glass-bg: rgba(255, 255, 255, 0.7);
+  --call-glass-border: rgba(234, 88, 12, 0.2);
+
+  /* Inputs */
+  --input-bg: #ffffff;
+  --input-border: #fde68a;
+  --input-border-focus: #ea580c;
+  --input-text: #1c1917;
+
+  /* Shadows */
+  --shadow-card: 0 4px 16px rgba(234, 88, 12, 0.06);
+  --shadow-elevated: 0 8px 32px rgba(234, 88, 12, 0.12);
+  --shadow-glow: 0 4px 16px rgba(234, 88, 12, 0.4);
+
+  /* Aurora blobs */
+  --aurora-1: rgba(250, 204, 21, 0.4);
+  --aurora-2: rgba(249, 115, 22, 0.4);
+  --aurora-3: rgba(236, 72, 153, 0.35);
+
+  /* Logo SVG gradient stops */
+  --logo-1: #fbbf24;
+  --logo-2: #ea580c;
+
+  /* Scrollbar */
+  --scroll-thumb: rgba(234, 88, 12, 0.25);
+  --scroll-thumb-hover: rgba(234, 88, 12, 0.5);
+}
+
+/* ============================================
+   THEME TOKENS — DARK (Pure black + neon cyberpunk)
+   ============================================ */
+[data-theme="dark"] {
+  --grad-brand: linear-gradient(135deg, #fbbf24 0%, #ec4899 50%, #a855f7 100%);
+  --grad-brand-soft: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(236, 72, 153, 0.2) 50%, rgba(168, 85, 247, 0.2) 100%);
+
+  --brand-50: #0a0a0a;
+  --brand-100: #171717;
+  --brand-200: #262626;
+  --brand-400: #fbbf24;
+  --brand-500: #f97316;
+  --brand-600: #ec4899;
+  --brand-700: #a855f7;
+  --brand-text: #fbbf24;
+
+  --canvas-bg: #000000;
+  --canvas-solid: #000000;
+  --surface: #0a0a0a;
+  --surface-2: #111111;
+  --surface-elevated: #141414;
+
+  --text-primary: #f5f5f5;
+  --text-secondary: #d4d4d4;
+  --text-tertiary: #a3a3a3;
+  --text-muted: #737373;
+  --text-inverse: #000000;
+
+  --border: rgba(236, 72, 153, 0.2);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(251, 191, 36, 0.4);
+
+  --shell-bg: linear-gradient(135deg, #000000 0%, #0a0010 50%, #000000 100%);
+  --rail-bg: rgba(10, 10, 15, 0.8);
+  --rail-border: rgba(236, 72, 153, 0.15);
+  --rail-text: rgba(255, 255, 255, 0.55);
+  --rail-text-active: #fbbf24;
+
+  --msg-out-bg: linear-gradient(135deg, #ec4899, #a855f7);
+  --msg-out-shadow: 0 0 24px rgba(236, 72, 153, 0.5), 0 0 48px rgba(168, 85, 247, 0.3);
+  --msg-out-text: #ffffff;
+  --msg-in-bg: #0f0f0f;
+  --msg-in-text: #f5f5f5;
+  --msg-in-border: rgba(251, 191, 36, 0.15);
+
+  --header-bg: #0a0a0a;
+  --header-border: rgba(236, 72, 153, 0.15);
+
+  --row-active-bg: linear-gradient(90deg, rgba(251, 191, 36, 0.15), rgba(236, 72, 153, 0.05));
+  --row-active-border: #fbbf24;
+  --row-hover-bg: rgba(251, 191, 36, 0.05);
+
+  --success: #00ffaa;
+  --success-bg: rgba(0, 255, 170, 0.12);
+  --warn: #fbbf24;
+  --danger: #ff0055;
+  --info: #00d9ff;
+
+  --glass-bg: rgba(15, 15, 20, 0.7);
+  --glass-border: rgba(236, 72, 153, 0.2);
+
+  --call-bg: radial-gradient(circle at 30% 20%, rgba(168, 85, 247, 0.4) 0%, transparent 50%),
+             radial-gradient(circle at 70% 80%, rgba(236, 72, 153, 0.4) 0%, transparent 50%),
+             #000000;
+  --call-text: #ffffff;
+  --call-glass-bg: rgba(20, 20, 30, 0.6);
+  --call-glass-border: rgba(236, 72, 153, 0.25);
+
+  --input-bg: #111111;
+  --input-border: rgba(236, 72, 153, 0.25);
+  --input-border-focus: #fbbf24;
+  --input-text: #f5f5f5;
+
+  --shadow-card: 0 0 24px rgba(236, 72, 153, 0.15), 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-elevated: 0 0 32px rgba(168, 85, 247, 0.25), 0 8px 32px rgba(0, 0, 0, 0.8);
+  --shadow-glow: 0 0 32px rgba(251, 191, 36, 0.6), 0 0 64px rgba(236, 72, 153, 0.4);
+
+  --aurora-1: rgba(251, 191, 36, 0.4);
+  --aurora-2: rgba(236, 72, 153, 0.5);
+  --aurora-3: rgba(168, 85, 247, 0.5);
+
+  --logo-1: #fbbf24;
+  --logo-2: #ec4899;
+
+  --scroll-thumb: rgba(236, 72, 153, 0.3);
+  --scroll-thumb-hover: rgba(251, 191, 36, 0.6);
+}
+
+/* ============================================
+   THEMED UTILITY CLASSES
+   ============================================ */
 @layer utilities {
-  .brand-grad {
-    background: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%);
-  }
+  body { background: var(--canvas-bg); color: var(--text-primary); transition: background 0.4s ease, color 0.4s ease; }
+
+  .brand-grad { background: var(--grad-brand); }
   .brand-grad-text {
-    background: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    background: var(--grad-brand);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .glass {
+
+  .themed-surface { background-color: var(--surface); border-color: var(--border); }
+  .themed-surface-2 { background-color: var(--surface-2); }
+  .themed-canvas { background: var(--canvas-bg); }
+  .themed-text { color: var(--text-primary); }
+  .themed-text-2 { color: var(--text-secondary); }
+  .themed-text-3 { color: var(--text-tertiary); }
+  .themed-text-muted { color: var(--text-muted); }
+  .themed-border { border-color: var(--border); }
+
+  .themed-msg-in { background: var(--msg-in-bg); border: 1px solid var(--msg-in-border); color: var(--msg-in-text); }
+  .themed-msg-out { background: var(--msg-out-bg); box-shadow: var(--msg-out-shadow); color: var(--msg-out-text); }
+
+  .themed-input {
+    background: var(--input-bg); border: 1.5px solid var(--input-border);
+    color: var(--input-text); border-radius: 10px; padding: 10px 14px;
+    font-size: 14px; transition: all 0.2s ease;
+  }
+  .themed-input:focus { outline: none; border-color: var(--input-border-focus); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15); }
+
+  .themed-glass {
     backdrop-filter: blur(20px) saturate(150%);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
   }
-  .online-ring {
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #10b981;
-  }
-  .send-btn-glow {
-    box-shadow: 0 4px 16px rgba(234, 88, 12, 0.4);
-  }
+
+  /* Online ring -- adds neon glow in dark */
+  .online-ring { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--success); }
+  [data-theme="dark"] .online-ring { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--success), 0 0 12px var(--success); }
+
+  /* Avatars: neon halo only in dark mode */
+  [data-theme="dark"] .avatar { box-shadow: 0 0 16px rgba(236, 72, 153, 0.4); }
+  [data-theme="dark"] .avatar-2 { box-shadow: 0 0 16px rgba(139, 92, 246, 0.4); }
+  [data-theme="dark"] .avatar-3 { box-shadow: 0 0 16px rgba(6, 182, 212, 0.4); }
+  [data-theme="dark"] .avatar-4 { box-shadow: 0 0 16px rgba(239, 68, 68, 0.4); }
+  [data-theme="dark"] .avatar-5 { box-shadow: 0 0 16px rgba(236, 72, 153, 0.5); }
+  [data-theme="dark"] .avatar-6 { box-shadow: 0 0 16px rgba(99, 102, 241, 0.4); }
+
+  /* Mention pills: neon flicker glow in dark */
+  .mention { background: rgba(251, 191, 36, 0.15); color: var(--brand-text); padding: 1px 6px; border-radius: 4px; font-weight: 600; }
+  [data-theme="dark"] .mention { text-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
+
+  /* Reactions */
+  .reaction-pill { background: var(--surface); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border: 1px solid var(--msg-in-border); }
+  [data-theme="dark"] .reaction-pill { background: var(--surface-elevated); box-shadow: 0 0 12px rgba(251, 191, 36, 0.2); }
+
+  /* Scrollbar */
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+
+  /* Smooth transitions */
+  html { transition: background 0.4s ease; }
 }
 
 @keyframes blob-float {
@@ -78,9 +317,4 @@
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
-
-body {
-  background-color: var(--color-canvas);
-  color: #1c1917;
 }

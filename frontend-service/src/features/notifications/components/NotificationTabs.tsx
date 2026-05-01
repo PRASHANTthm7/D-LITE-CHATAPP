@@ -13,18 +13,18 @@ export function NotificationTabs({ activeTab, onTabChange }: NotificationTabsPro
   ] as const;
 
   return (
-    <div className="flex items-center gap-6 border-b border-gray-100 mb-6">
+    <div className="flex items-center gap-6 border-b themed-border mb-6">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
           className={`py-3 text-sm font-semibold relative transition-colors ${
-            activeTab === tab.id ? "text-brand-600" : "text-gray-500 hover:text-gray-900"
+            activeTab === tab.id ? "text-[var(--brand-600)]" : "themed-text-2 hover:themed-text"
           }`}
         >
           {tab.label}
           {activeTab === tab.id && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-500 rounded-t-full" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--brand-500)] rounded-t-full" />
           )}
         </button>
       ))}

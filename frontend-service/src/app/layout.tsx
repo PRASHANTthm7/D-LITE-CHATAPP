@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/shared/components/Toast";
+import { ThemeProvider } from "@/shared/theme/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,11 +40,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-canvas text-gray-900 font-sans">
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var t = localStorage.getItem('dlite-theme') || 'light';
+              document.documentElement.setAttribute('data-theme', t);
+            } catch(e) {
+              document.documentElement.setAttribute('data-theme', 'light');
+            }
+          })();
+        `}} />
+      </head>
+      <body className="min-h-full flex flex-col font-sans">
+        <ThemeProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

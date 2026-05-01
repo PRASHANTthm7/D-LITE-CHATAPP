@@ -15,10 +15,10 @@ export function ChatListSidebar() {
   );
 
   return (
-    <div className="w-[280px] h-full border-r border-gray-100 bg-surface flex flex-col shrink-0">
+    <div className="w-[280px] h-full border-r themed-border themed-surface flex flex-col shrink-0">
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Chats</h2>
+          <h2 className="text-xl font-bold themed-text">Chats</h2>
           <IconButton size="sm" variant="secondary" tooltip="New chat">
             <Edit size={16} />
           </IconButton>
@@ -28,7 +28,7 @@ export function ChatListSidebar() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           iconLeft={<Search size={16} />} 
-          className="h-9 py-0 text-sm"
+          className="themed-input h-9 py-0 text-sm w-full"
         />
       </div>
 
