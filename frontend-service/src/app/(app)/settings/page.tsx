@@ -5,12 +5,14 @@ import { SettingsHeader } from "@/features/settings/components/SettingsHeader";
 import { Avatar } from "@/shared/components/Avatar";
 import { Input } from "@/shared/components/Input";
 import { Button } from "@/shared/components/Button";
+import { CldUploadWidget } from "next-cloudinary";
 
 export default function ProfileSettingsPage() {
   const [name, setName] = useState("Aarav Sharma");
   const [username, setUsername] = useState("aarav");
   const [email, setEmail] = useState("aarav@company.com");
   const [bio, setBio] = useState("Engineering Manager");
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
   return (
     <div className="animate-in fade-in zoom-in-95 duration-300">
@@ -18,10 +20,21 @@ export default function ProfileSettingsPage() {
       
       <div className="bg-surface border border-gray-100 rounded-2xl p-6 shadow-sm mb-8">
         <div className="flex items-center gap-6 mb-8">
-          <Avatar initials="AS" size="lg" className="w-24 h-24 text-2xl" />
-          <div className="space-x-3">
-            <Button variant="primary">Upload Avatar</Button>
-            <Button variant="secondary" className="text-danger border-red-100 hover:bg-red-50">Remove</Button>
+          <Avatar initials="AS" size="lg" src={avatarUrl} className="w-24 h-24 text-2xl" />
+          <div className="space-x-3 flex items-center">
+            <CldUploadWidget 
+              uploadPreset="ml_default" // default preset, you should configure this in Cloudinary
+              onSuccess={(result: any) => {
+                if (result.info && typeof result.info === 'object' && 'secure_url' in result.info) {
+                  setAvatarUrl(result.info.secure_url as string);
+                }
+              }}
+            >
+              {({ open }) => (
+                <Button variant="primary" onClick={() => open()}>Upload Avatar</Button>
+              )}
+            </CldUploadWidget>
+            <Button variant="secondary" className="text-danger border-red-100 hover:bg-red-50" onClick={() => setAvatarUrl(undefined)}>Remove</Button>
           </div>
         </div>
 
