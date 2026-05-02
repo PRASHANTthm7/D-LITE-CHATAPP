@@ -1,90 +1,42 @@
 "use client";
 
-import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import { ChatHeader } from "@/features/chat/components/ChatHeader";
 import { MessageThread, ThreadMessage } from "@/features/chat/components/MessageThread";
 import { Composer } from "@/features/chat/components/Composer";
-import { mockUsers, recentChats } from "@/features/dashboard/lib/mock-data";
+import { useChatMessages } from "@/features/chat/hooks/use-chat-messages";
+import { useDMConversations } from "@/features/chat/hooks/use-dm-conversations";
 
 export default function ChatPage() {
-  const { peerId } = useParams();
-  
-  // Find user by chat ID or fallback to Aarav for demo
-  const chat = recentChats.find(c => c.id === peerId) || recentChats[0];
-  const user = chat.user;
+  const { peerId } = useParams<{ peerId: string }>();
+  const { messages, send, addReaction, loading } = useChatMessages(peerId);
+  const { conversations } = useDMConversations();
 
-  const [messages, setMessages] = useState<ThreadMessage[]>([
-    {
-      id: "m1",
-      direction: "in",
-      content: "Hey! Can we review the new designs today?",
-      time: "10:30 AM",
-      dateStr: "Today",
-    },
-    {
-      id: "m2",
-      direction: "out",
-      content: "Sure, let me check the Figma file and get back to you in 10 mins.",
-      time: "10:32 AM",
-      status: "read",
-    },
-    {
-      id: "m3",
-      direction: "in",
-      content: "Awesome, thanks!",
-      time: "10:33 AM",
-      reactions: [{ emoji: "🔥", count: 1 }],
-      replyTo: {
-        authorName: "You",
-        content: "Sure, let me check the Figma file and get back to you in 10 mins."
-      }
-    }
-  ]);
+  const conversation = conversations.find((c) => c.id === peerId);
+  const peerUser = conversation?.user ?? { id: peerId, name: "Chat", initials: "?", isOnline: false };
 
-  const [isTyping, setIsTyping] = useState(false);
-
-  const handleSend = (text: string) => {
-    const newMessage: ThreadMessage = {
-      id: Date.now().toString(),
-      direction: "out",
-      content: text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      status: "sending"
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-
-    // Simulate sending -> sent -> read
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === newMessage.id ? { ...m, status: "sent" } : m));
-      
-      setTimeout(() => {
-        setMessages(prev => prev.map(m => m.id === newMessage.id ? { ...m, status: "read" } : m));
-        
-        // Simulate reply after 1s
-        setTimeout(() => {
-          setIsTyping(true);
-          
-          setTimeout(() => {
-            setIsTyping(false);
-            setMessages(prev => [...prev, {
-              id: Date.now().toString(),
-              direction: "in",
-              content: "Got it! Looking forward to your feedback.",
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            }]);
-          }, 2000);
-        }, 1000);
-      }, 800);
-    }, 800);
-  };
+  const threadMessages: ThreadMessage[] = messages.map((m) => ({
+    id: m.id,
+    direction: m.isOwn ? "out" : "in",
+    content: m.content,
+    time: m.time,
+    status: (m.status === "delivered" ? "sent" : m.status === "failed" ? "sending" : m.status) as ThreadMessage["status"],
+    reactions: m.reactions?.map((r) => ({ emoji: r.emoji, count: r.count, active: r.reacted })),
+    replyTo: m.replyTo ? { authorName: m.replyTo.sender, content: m.replyTo.content } : undefined,
+    onReact: (emoji: string) => addReaction(m.id, emoji),
+  }));
 
   return (
     <div className="flex flex-col h-full bg-canvas relative z-0">
-      <ChatHeader user={user} isTyping={isTyping || chat.isTyping} />
-      <MessageThread messages={messages} typingUser={isTyping ? { name: user.name, initials: user.initials } : undefined} />
-      <Composer onSend={handleSend} />
+      <ChatHeader user={peerUser} isTyping={false} />
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center themed-text-3 text-sm">
+          Loading messages…
+        </div>
+      ) : (
+        <MessageThread messages={threadMessages} />
+      )}
+      <Composer onSend={send} />
     </div>
   );
 }

@@ -1,0 +1,114 @@
+"use client"
+
+import * as React from "react"
+import { createClient } from "@/core/auth/supabase-client"
+import type { GroupPreview, User } from "@/features/dashboard/lib/mock-data"
+
+export interface GroupMessage {
+  id: string
+  direction: "in" | "out"
+  authorName: string
+  role: "owner" | "admin" | "mod" | "member"
+  content: string
+  time: string
+  dateStr?: string
+}
+
+interface UseGroupMessagesReturn {
+  group: GroupPreview | null
+  members: (User & { role: "owner" | "admin" | "mod" | "member" })[]
+  messages: GroupMessage[]
+  send: (content: string) => void
+  loading: boolean
+}
+
+export function useGroupMessages(groupId: string): UseGroupMessagesReturn {
+  const [group, setGroup] = React.useState<GroupPreview | null>(null)
+  const [members, setMembers] = React.useState<(User & { role: "owner" | "admin" | "mod" | "member" })[]>([])
+  const [messages, setMessages] = React.useState<GroupMessage[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const userIdRef = React.useRef<string | null>(null)
+
+  const load = React.useCallback(async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+    userIdRef.current = user.id
+
+    const [groupRes, msgRes] = await Promise.all([
+      supabase
+        .from("groups")
+        .select(`id, name, members:group_members(role, profile:profiles(id, display_name, username, status))`)
+        .eq("id", groupId)
+        .single(),
+      supabase
+        .from("group_messages")
+        .select(`id, content, created_at, sender_id, sender:profiles(id, display_name, username)`)
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: true }),
+    ])
+
+    if (groupRes.data) {
+      const g = groupRes.data as any
+      const rawMembers = (g.members || []).map((m: any, i: number): User & { role: "owner" | "admin" | "mod" | "member" } => {
+        const p = m.profile
+        const name: string = p.display_name || p.username || "?"
+        const roleMap = ["owner", "admin", "mod", "member"] as const
+        return {
+          id: p.id,
+          name,
+          initials: name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase(),
+          isOnline: p.status === "Online",
+          role: m.role === "Owner" ? "owner" : m.role === "Admin" ? "admin" : m.role === "Moderator" ? "mod" : "member",
+        }
+      })
+      setMembers(rawMembers)
+      setGroup({
+        id: g.id,
+        name: g.name || "Group",
+        members: rawMembers.slice(0, 3),
+        lastMessage: "",
+        time: "",
+        unreadCount: 0,
+      })
+    }
+
+    if (msgRes.data) {
+      setMessages(
+        msgRes.data.map((m: any) => {
+          const sender = m.sender as any
+          const name: string = sender?.display_name || sender?.username || "Unknown"
+          return {
+            id: m.id,
+            direction: m.sender_id === user.id ? "out" : "in",
+            authorName: m.sender_id === user.id ? "You" : name,
+            role: "member",
+            content: m.content || "",
+            time: new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          } as GroupMessage
+        })
+      )
+    }
+
+    setLoading(false)
+  }, [groupId])
+
+  React.useEffect(() => {
+    load()
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`group-${groupId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "group_messages", filter: `group_id=eq.${groupId}` }, load)
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [groupId, load])
+
+  const send = React.useCallback(async (content: string) => {
+    const userId = userIdRef.current
+    if (!userId) return
+    const supabase = createClient()
+    await supabase.from("group_messages").insert({ group_id: groupId, sender_id: userId, content })
+  }, [groupId])
+
+  return { group, members, messages, send, loading }
+}

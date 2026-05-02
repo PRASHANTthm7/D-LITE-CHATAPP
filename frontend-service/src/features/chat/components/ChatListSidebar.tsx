@@ -1,16 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Edit, Search } from "lucide-react";
 import { IconButton } from "@/shared/components/IconButton";
 import { Input } from "@/shared/components/Input";
 import { ChatListItem } from "./ChatListItem";
-import { recentChats } from "@/features/dashboard/lib/mock-data";
+import { useDMConversations } from "../hooks/use-dm-conversations";
+import type { ChatPreview } from "@/features/dashboard/lib/mock-data";
 
 export function ChatListSidebar() {
   const [search, setSearch] = useState("");
+  const { conversations, loading } = useDMConversations();
 
-  const filteredChats = recentChats.filter(chat => 
+  const chats: ChatPreview[] = conversations.map((c) => ({
+    id: c.id,
+    user: c.user,
+    lastMessage: c.lastMessage,
+    time: c.time,
+    unreadCount: c.unreadCount,
+  }));
+
+  const filtered = chats.filter((chat) =>
     chat.user.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -23,22 +33,24 @@ export function ChatListSidebar() {
             <Edit size={16} />
           </IconButton>
         </div>
-        <Input 
-          placeholder="Search chats..." 
+        <Input
+          placeholder="Search chats..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          iconLeft={<Search size={16} />} 
+          iconLeft={<Search size={16} />}
           className="themed-input h-9 py-0 text-sm w-full"
         />
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
-        {filteredChats.length > 0 ? (
-          filteredChats.map(chat => (
-            <ChatListItem key={chat.id} chat={chat} />
-          ))
+        {loading ? (
+          <div className="text-center text-sm themed-text-3 py-8">Loading...</div>
+        ) : filtered.length > 0 ? (
+          filtered.map((chat) => <ChatListItem key={chat.id} chat={chat} />)
         ) : (
-          <div className="text-center text-sm text-gray-500 py-8">No chats found</div>
+          <div className="text-center text-sm themed-text-3 py-8">
+            {conversations.length === 0 ? "No conversations yet" : "No chats found"}
+          </div>
         )}
       </div>
     </div>

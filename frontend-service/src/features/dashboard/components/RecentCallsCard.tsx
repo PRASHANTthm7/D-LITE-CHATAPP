@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { Phone, Video, PhoneMissed, PhoneCall } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar } from "@/shared/components/Avatar";
 import { Pill } from "@/shared/components/Pill";
 import { IconButton } from "@/shared/components/IconButton";
-import { recentCalls, CallPreview } from "../lib/mock-data";
+import { CallPreview } from "../lib/mock-data";
 
 function CallItem({ call }: { call: CallPreview }) {
   const isMissed = call.status === "missed";
@@ -44,7 +43,7 @@ function CallItem({ call }: { call: CallPreview }) {
   );
 }
 
-export function RecentCallsCard() {
+export function RecentCallsCard({ calls }: { calls: CallPreview[] }) {
   return (
     <div className="themed-surface border themed-border rounded-2xl p-6 shadow-card flex flex-col h-full">
       <div className="flex items-center justify-between mb-6">
@@ -60,9 +59,11 @@ export function RecentCallsCard() {
       </div>
 
       <div className="flex flex-col flex-1 divide-y themed-border">
-        {recentCalls.map((call) => (
-          <CallItem key={call.id} call={call} />
-        ))}
+        {calls.length === 0 ? (
+          <p className="text-sm themed-text-3 py-4">No calls yet.</p>
+        ) : (
+          calls.map((call) => <CallItem key={call.id} call={call} />)
+        )}
       </div>
     </div>
   );

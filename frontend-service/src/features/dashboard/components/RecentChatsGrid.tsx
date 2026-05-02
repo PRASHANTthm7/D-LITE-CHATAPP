@@ -1,9 +1,12 @@
-import React from "react";
 import Link from "next/link";
 import { RecentChatCard } from "./RecentChatCard";
-import { recentChats } from "../lib/mock-data";
+import { getRecentConversations } from "@/core/data/dashboard";
+import { getUser } from "@/core/auth/get-user";
 
-export function RecentChatsGrid() {
+export async function RecentChatsGrid() {
+  const user = await getUser();
+  const chats = user ? await getRecentConversations(user.id) : [];
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
@@ -12,11 +15,15 @@ export function RecentChatsGrid() {
           View all →
         </Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recentChats.map((chat) => (
-          <RecentChatCard key={chat.id} chat={chat} />
-        ))}
-      </div>
+      {chats.length === 0 ? (
+        <p className="text-sm themed-text-3 py-4">No recent chats yet. Start a conversation!</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {chats.map((chat) => (
+            <RecentChatCard key={chat.id} chat={chat} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
