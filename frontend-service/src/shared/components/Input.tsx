@@ -6,28 +6,29 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   success?: boolean;
   iconRight?: React.ReactNode;
   iconLeft?: React.ReactNode;
+  prefix?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", error, success, iconRight, iconLeft, ...props }, ref) => {
+  ({ className = "", error, success, iconRight, iconLeft, prefix, ...props }, ref) => {
     const baseStyles =
       "block w-full rounded-xl themed-border shadow-sm focus:border-[var(--input-border-focus)] focus:ring-[var(--brand-500)] sm:text-sm themed-surface px-4 py-2.5 transition-colors themed-text";
-    
+
     let stateStyles = "themed-border hover:border-[var(--brand-400)]";
     if (error) stateStyles = "border-[var(--danger)] text-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]";
     else if (success) stateStyles = "border-[var(--success)] focus:border-[var(--success)] focus:ring-[var(--success)]";
 
-    const hasLeftIcon = !!iconLeft;
+    const hasLeftIcon = !!iconLeft || !!prefix;
     const hasRightIcon = !!iconRight || !!error || success;
 
     return (
       <div className="relative">
-        {hasLeftIcon && (
+        {(iconLeft || prefix) && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none themed-text-3">
-            {iconLeft}
+            {iconLeft ?? <span className="text-sm">{prefix}</span>}
           </div>
         )}
-        
+
         <input
           ref={ref}
           className={`${baseStyles} ${stateStyles} ${hasLeftIcon ? "pl-10" : ""} ${hasRightIcon ? "pr-10" : ""} ${className}`}
