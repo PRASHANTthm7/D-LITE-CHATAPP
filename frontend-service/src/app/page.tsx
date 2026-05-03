@@ -87,6 +87,9 @@ const mockMessages = [
   { id: 4, user: "You", avatar: "Y", text: "D-Lite on top fr 🚀", time: "12:04", out: true },
 ];
 
+/* ─── static waveform heights (no Math.random in render → no hydration mismatch) ─── */
+const WAVE_HEIGHTS = [4, 8, 14, 6, 12, 10, 16, 5, 13, 9, 15, 7, 11, 3, 10, 6];
+
 /* ─── stats ─── */
 const stats = [
   { value: "5", suffix: " services", label: "Microservices" },
@@ -629,7 +632,7 @@ export default function LandingPage() {
                       key={i}
                       className="w-0.5 rounded-full"
                       style={{
-                        height: `${Math.random() * 14 + 2}px`,
+                        height: `${WAVE_HEIGHTS[i]}px`,
                         background: "var(--grad-brand)",
                         animation: "wave-bar 0.8s infinite",
                         animationDelay: `${i * 0.05}s`,
