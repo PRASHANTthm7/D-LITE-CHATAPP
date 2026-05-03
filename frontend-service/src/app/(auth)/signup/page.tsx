@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Camera, Mars, Venus, Check, Shield, Lock, FileText } from "lucide-react";
-import { CldUploadWidget } from "next-cloudinary";
+import dynamic from "next/dynamic";
+
+const CldUploadWidget = dynamic(
+  () => import("next-cloudinary").then((m) => m.CldUploadWidget),
+  { ssr: false }
+);
 import { AuthSplitVisual } from "@/features/auth/components/AuthSplitVisual";
 import { SocialButtons } from "@/features/auth/components/SocialButtons";
 import { StatBadges } from "@/features/auth/components/StatBadges";
