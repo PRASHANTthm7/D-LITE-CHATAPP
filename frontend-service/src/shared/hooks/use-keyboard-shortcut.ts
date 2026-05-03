@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 
 type ModifierKey = "meta" | "ctrl" | "shift" | "alt"
 
@@ -10,6 +10,8 @@ export function useKeyboardShortcut(
   options: { enabled?: boolean } = {}
 ) {
   const { enabled = true } = options
+  const callbackRef = useRef(callback)
+  callbackRef.current = callback
 
   useEffect(() => {
     if (!enabled) return
@@ -19,12 +21,6 @@ export function useKeyboardShortcut(
     const modifiers: ModifierKey[] = parts.slice(0, -1) as ModifierKey[]
 
     const handler = (e: KeyboardEvent) => {
-      const metaOrCtrl = modifiers.includes("meta") || modifiers.includes("ctrl")
-        ? e.metaKey || e.ctrlKey
-        : true
-      const shift = modifiers.includes("shift") ? e.shiftKey : !e.shiftKey || modifiers.length === 0
-      const alt = modifiers.includes("alt") ? e.altKey : true
-
       if (
         e.key.toLowerCase() === key &&
         (modifiers.includes("meta") || modifiers.includes("ctrl") ? e.metaKey || e.ctrlKey : true) &&
@@ -32,11 +28,11 @@ export function useKeyboardShortcut(
         (modifiers.includes("alt") ? e.altKey : true)
       ) {
         e.preventDefault()
-        callback(e)
+        callbackRef.current(e)
       }
     }
 
     document.addEventListener("keydown", handler)
     return () => document.removeEventListener("keydown", handler)
-  }, [shortcut, callback, enabled])
+  }, [shortcut, enabled])
 }

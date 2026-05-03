@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,11 +11,13 @@ export interface UsernameAvailabilityProps {
 
 export function UsernameAvailability({ username, onAvailabilityChange }: UsernameAvailabilityProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "available" | "taken">("idle");
+  const callbackRef = useRef(onAvailabilityChange);
+  callbackRef.current = onAvailabilityChange;
 
   useEffect(() => {
     if (!username || username.length < 3) {
       setStatus("idle");
-      onAvailabilityChange?.(false);
+      callbackRef.current?.(false);
       return;
     }
 
@@ -27,15 +29,15 @@ export function UsernameAvailability({ username, onAvailabilityChange }: Usernam
         const data = await res.json();
         const isAvailable = data.available ?? true;
         setStatus(isAvailable ? "available" : "taken");
-        onAvailabilityChange?.(isAvailable);
+        callbackRef.current?.(isAvailable);
       } catch {
         setStatus("idle");
-        onAvailabilityChange?.(false);
+        callbackRef.current?.(false);
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [username, onAvailabilityChange]);
+  }, [username]);
 
   return (
     <div className="h-5 mt-1 overflow-hidden">
