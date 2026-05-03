@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Camera, Mars, Venus, Check, Shield, Lock, FileText } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const CldUploadWidget = dynamic(
-  () => import("next-cloudinary").then((m) => m.CldUploadWidget),
-  { ssr: false }
-);
+import { Mars, Venus, Check, Shield, Lock, FileText } from "lucide-react";
 import { AuthSplitVisual } from "@/features/auth/components/AuthSplitVisual";
+import { AvatarUpload } from "@/features/auth/components/AvatarUpload";
 import { SocialButtons } from "@/features/auth/components/SocialButtons";
 import { StatBadges } from "@/features/auth/components/StatBadges";
 import { Button } from "@/shared/components/Button";
@@ -138,50 +133,11 @@ export default function SignupPage() {
 
             {/* ── Profile Picture ── */}
             <div className="flex flex-col items-center gap-3 py-2">
-              <CldUploadWidget
-                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? "dlite_avatars" : "ml_default"}
-                onSuccess={handleAvatarUpload}
-              >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    onClick={() => open()}
-                    className="relative group cursor-pointer focus:outline-none"
-                  >
-                    {/* Avatar circle */}
-                    <div
-                      className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center text-white text-2xl font-bold border-2 transition-all"
-                      style={{
-                        background: avatarUrl ? "transparent" : "var(--grad-brand)",
-                        borderColor: "var(--border-strong)",
-                        boxShadow: "var(--shadow-card)",
-                      }}
-                    >
-                      {avatarUrl ? (
-                        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{initials}</span>
-                      )}
-                    </div>
-
-                    {/* Camera overlay */}
-                    <div
-                      className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: "rgba(0,0,0,0.45)" }}
-                    >
-                      <Camera size={22} className="text-white" />
-                    </div>
-
-                    {/* Add badge */}
-                    <div
-                      className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center border-2 border-[var(--canvas-solid)]"
-                      style={{ background: "var(--grad-brand)" }}
-                    >
-                      <Camera size={12} className="text-white" />
-                    </div>
-                  </button>
-                )}
-              </CldUploadWidget>
+              <AvatarUpload
+                avatarUrl={avatarUrl}
+                initials={initials}
+                onUpload={handleAvatarUpload}
+              />
 
               <p className="text-xs themed-text-3">
                 {avatarUrl ? (
