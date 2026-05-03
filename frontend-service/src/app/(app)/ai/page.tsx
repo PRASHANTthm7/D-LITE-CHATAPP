@@ -1,98 +1,241 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AIHistorySidebar } from "@/features/ai/components/AIHistorySidebar";
 import { AIHeader } from "@/features/ai/components/AIHeader";
 import { AIMessage } from "@/features/ai/components/AIMessage";
-import { ActionItem } from "@/features/ai/components/ActionItem";
-import { AIActions } from "@/features/ai/components/AIActions";
 import { SuggestionChip } from "@/features/ai/components/SuggestionChip";
 import { AIComposer } from "@/features/ai/components/AIComposer";
 import { ShimmerText } from "@/features/ai/components/ShimmerText";
 import { MessageBubble } from "@/features/chat/components/MessageBubble";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertCircle } from "lucide-react";
+
+const AI_URL = process.env.NEXT_PUBLIC_AI_API_URL ?? "http://localhost:5070";
+
+interface ChatMessage {
+  id: string;
+  type: "user" | "ai";
+  content: string;
+  isThinking?: boolean;
+  isStreaming?: boolean;
+  error?: boolean;
+}
+
+const SUGGESTIONS = [
+  { emoji: "📊", label: "Summarize my active groups" },
+  { emoji: "✍️", label: "Help me draft a professional message" },
+  { emoji: "💡", label: "What can you help me with?" },
+];
 
 export default function AIPage() {
-  const [messages, setMessages] = useState<{ id: string, type: "user" | "ai", content?: string, isThinking?: boolean }[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [composerVal, setComposerVal] = useState("");
+  const [busy, setBusy] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = (text: string) => {
-    const userMsgId = Date.now().toString();
+  // history sent to backend for context (role/content pairs)
+  const historyRef = useRef<{ role: string; content: string }[]>([]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = async (text: string) => {
+    if (busy || !text.trim()) return;
+    setBusy(true);
+
+    const userMsgId = crypto.randomUUID();
+    const aiMsgId = crypto.randomUUID();
+
+    // 1. Add user message
     setMessages(prev => [...prev, { id: userMsgId, type: "user", content: text }]);
-    
-    // Simulate thinking state
-    const aiThinkingId = (Date.now() + 1).toString();
-    setMessages(prev => [...prev, { id: aiThinkingId, type: "ai", isThinking: true }]);
 
-    // Resolve after 1.5s
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === aiThinkingId ? { id: aiThinkingId, type: "ai", isThinking: false } : m));
-    }, 1500);
+    // 2. Add AI placeholder (thinking)
+    setMessages(prev => [...prev, { id: aiMsgId, type: "ai", content: "", isThinking: true }]);
+
+    // Keep history for context
+    historyRef.current.push({ role: "user", content: text });
+
+    try {
+      const res = await fetch(`${AI_URL}/chat/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history: historyRef.current.slice(0, -1), // exclude the just-added user msg
+        }),
+      });
+
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      // Switch from thinking → streaming
+      setMessages(prev =>
+        prev.map(m => m.id === aiMsgId ? { ...m, isThinking: false, isStreaming: true } : m)
+      );
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
+          try {
+            const data = JSON.parse(line.slice(5).trim());
+            if (data.error) throw new Error(data.error);
+            if (data.done) break;
+            if (data.delta) {
+              accumulated += data.delta;
+              setMessages(prev =>
+                prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m)
+              );
+            }
+          } catch {
+            // skip malformed lines
+          }
+        }
+      }
+
+      // Mark streaming done
+      setMessages(prev =>
+        prev.map(m => m.id === aiMsgId ? { ...m, isStreaming: false } : m)
+      );
+
+      // Save to history
+      historyRef.current.push({ role: "assistant", content: accumulated });
+
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === aiMsgId
+            ? { ...m, isThinking: false, isStreaming: false, content: msg, error: true }
+            : m
+        )
+      );
+      // Remove failed user message from history
+      historyRef.current.pop();
+    } finally {
+      setBusy(false);
+    }
   };
-
-  const suggestions = [
-    { emoji: "📊", label: "Summarize active groups" },
-    { emoji: "✍️", label: "Draft a polite decline" },
-    { emoji: "🔍", label: "Find unread messages" }
-  ];
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-canvas">
       <AIHistorySidebar />
+
       <div className="flex-1 flex flex-col h-full relative z-0">
         <AIHeader />
-        
-        <div className="flex-1 overflow-y-auto p-6 scroll-smooth custom-scrollbar flex flex-col items-center">
+
+        <div className="flex-1 overflow-y-auto p-6 scroll-smooth scrollbar-thin flex flex-col items-center">
           <div className="w-full max-w-4xl">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[50vh] animate-in fade-in zoom-in-95 duration-500">
-                <div className="w-16 h-16 rounded-2xl brand-grad flex items-center justify-center shadow-accent text-white mb-6">
+
+            {/* Empty state */}
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-[50vh]">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg"
+                  style={{ background: "var(--grad-brand)" }}
+                >
                   <Sparkles size={32} />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">How can I help you today?</h2>
-                <div className="flex flex-wrap justify-center gap-3 mt-8">
-                  {suggestions.map((s, i) => (
-                    <SuggestionChip 
-                      key={i} 
-                      emoji={s.emoji} 
-                      label={s.label} 
-                      onClick={() => setComposerVal(s.label)} 
+                <h2 className="text-2xl font-bold themed-text mb-2">
+                  How can I help you today?
+                </h2>
+                <p className="themed-text-3 text-sm mb-8">
+                  Powered by Claude · Ask anything about your chats
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {SUGGESTIONS.map((s) => (
+                    <SuggestionChip
+                      key={s.label}
+                      emoji={s.emoji}
+                      label={s.label}
+                      onClick={() => setComposerVal(s.label)}
                     />
                   ))}
                 </div>
               </div>
-            ) : (
-              messages.map(m => (
-                <div key={m.id}>
-                  {m.type === "user" && (
-                    <MessageBubble id={m.id} direction="out" content={m.content || ""} time="Just now" status="read" />
-                  )}
-                  {m.type === "ai" && m.isThinking && (
-                    <div className="flex gap-4 w-full mb-6">
-                      <div className="w-8 h-8 rounded-full brand-grad flex items-center justify-center text-white shrink-0 mt-1 shadow-sm">
-                        <Sparkles size={14} />
-                      </div>
-                      <div className="flex items-center text-sm pt-2">
-                        <ShimmerText text="thinking..." className="lowercase" />
+            )}
+
+            {/* Message list */}
+            {messages.map((m) => {
+              if (m.type === "user") {
+                return (
+                  <MessageBubble
+                    key={m.id}
+                    id={m.id}
+                    direction="out"
+                    content={m.content}
+                    time="Just now"
+                    status="read"
+                  />
+                );
+              }
+
+              // Thinking
+              if (m.isThinking) {
+                return (
+                  <div key={m.id} className="flex gap-4 w-full mb-6">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0 mt-1"
+                      style={{ background: "var(--grad-brand)" }}
+                    >
+                      <Sparkles size={14} />
+                    </div>
+                    <div className="flex items-center text-sm pt-2">
+                      <ShimmerText text="thinking..." className="lowercase" />
+                    </div>
+                  </div>
+                );
+              }
+
+              // Error state
+              if (m.error) {
+                return (
+                  <div key={m.id} className="flex gap-4 w-full mb-6">
+                    <div className="w-8 h-8 rounded-full bg-danger/10 flex items-center justify-center text-danger shrink-0 mt-1">
+                      <AlertCircle size={14} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-danger border border-danger/20 bg-danger/5">
+                        {m.content}
                       </div>
                     </div>
+                  </div>
+                );
+              }
+
+              // AI response (streaming or complete)
+              return (
+                <AIMessage key={m.id}>
+                  <span style={{ whiteSpace: "pre-wrap" }}>{m.content}</span>
+                  {m.isStreaming && (
+                    <span
+                      className="inline-block w-0.5 h-4 ml-0.5 align-middle animate-pulse"
+                      style={{ background: "var(--brand-500)" }}
+                    />
                   )}
-                  {m.type === "ai" && !m.isThinking && (
-                    <AIMessage>
-                      <p className="mb-4">Here is the summarized information you requested:</p>
-                      <ActionItem num={1} title="Check Engineering updates" desc="Priya merged the PR and requested review on staging." colorClass="border-brand-500" />
-                      <ActionItem num={2} title="Design Sync" desc="New Figma links were shared by Sneha yesterday." colorClass="border-accent-pink" />
-                      <ActionItem num={3} title="Missed Call" desc="Tanvi tried to reach you yesterday at 4:15 PM." colorClass="border-accent-purple" />
-                      <AIActions />
-                    </AIMessage>
-                  )}
-                </div>
-              ))
-            )}
+                </AIMessage>
+              );
+            })}
+
+            <div ref={bottomRef} />
           </div>
         </div>
 
-        <AIComposer value={composerVal} onChange={setComposerVal} onSend={handleSend} />
+        <AIComposer
+          value={composerVal}
+          onChange={setComposerVal}
+          onSend={handleSend}
+          disabled={busy}
+        />
       </div>
     </div>
   );

@@ -9,9 +9,10 @@ export interface AIComposerProps {
   onSend: (text: string) => void;
   value?: string;
   onChange?: (val: string) => void;
+  disabled?: boolean;
 }
 
-export function AIComposer({ onSend, value = "", onChange }: AIComposerProps) {
+export function AIComposer({ onSend, value = "", onChange, disabled = false }: AIComposerProps) {
   const [internalText, setInternalText] = useState(value);
   const text = onChange ? value : internalText;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -29,6 +30,7 @@ export function AIComposer({ onSend, value = "", onChange }: AIComposerProps) {
   };
 
   const handleSend = () => {
+    if (disabled || !text.trim()) return;
     if (text.trim()) {
       onSend(text.trim());
       if (onChange) onChange("");
@@ -56,8 +58,9 @@ export function AIComposer({ onSend, value = "", onChange }: AIComposerProps) {
             value={text}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything... or use ✨ for actions"
-            className="w-full bg-transparent py-3.5 px-4 outline-none resize-none min-h-[52px] max-h-[120px] text-[15px] custom-scrollbar themed-text"
+            disabled={disabled}
+            placeholder={disabled ? "AI is responding…" : "Ask anything... or use ✨ for actions"}
+            className="w-full bg-transparent py-3.5 px-4 outline-none resize-none min-h-[52px] max-h-[120px] text-[15px] custom-scrollbar themed-text disabled:opacity-60"
             rows={1}
           />
           <IconButton size="sm" variant="ghost" className="themed-text-3 hover:text-[var(--brand-text)] mb-1.5 mr-1">
@@ -69,11 +72,11 @@ export function AIComposer({ onSend, value = "", onChange }: AIComposerProps) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleSend}
-          disabled={!text.trim()}
+          disabled={disabled || !text.trim()}
           className={`w-12 h-12 mb-0.5 rounded-xl flex items-center justify-center transition-all ${
-            text.trim() 
-              ? "brand-grad text-white shadow-glow" 
-              : "themed-surface-2 themed-text-3 cursor-not-allowed"
+            !disabled && text.trim()
+              ? "brand-grad text-white shadow-glow"
+              : "themed-surface-2 themed-text-3 cursor-not-allowed opacity-50"
           }`}
         >
           <Send size={18} className="ml-0.5" />
