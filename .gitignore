@@ -1,7 +1,8 @@
 node_modules/
 .next/
-.env.local
 .env
+.env.local
+.env*.local
 .DS_Store
 out/
 build/
@@ -10,3 +11,10 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+
+# Service env files (never commit real secrets)
+core-backend/.env
+realtime-service/.env
+ai-backend/.env
+call-service/.env
+frontend-service/.env.local
