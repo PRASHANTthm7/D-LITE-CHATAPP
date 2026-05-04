@@ -2,19 +2,50 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mars, Venus, Check, Shield, Lock, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mars, Venus, Check, Shield, Lock, ArrowRight, Sparkles, Mail } from "lucide-react";
 import { AuthSplitVisual } from "@/features/auth/components/AuthSplitVisual";
 import { AvatarUpload } from "@/features/auth/components/AvatarUpload";
 import { SocialButtons } from "@/features/auth/components/SocialButtons";
-import { StatBadges } from "@/features/auth/components/StatBadges";
-import { Button } from "@/shared/components/Button";
-import { Input } from "@/shared/components/Input";
 import { PasswordStrengthMeter } from "@/features/auth/components/PasswordStrengthMeter";
 import { UsernameAvailability } from "@/features/auth/components/UsernameAvailability";
 import { ThemeToggle } from "@/shared/components/ThemeToggle";
 import { createClient } from "@/core/auth/supabase-client";
 
 type Gender = "male" | "female";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 14 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { delay: i * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  }),
+};
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold themed-text-2 mb-1.5 uppercase tracking-wide">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function StyledInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all themed-text"
+      style={{
+        background: "var(--input-bg)",
+        border: "1.5px solid var(--input-border)",
+        color: "var(--input-text)",
+      }}
+      onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "var(--input-border-focus)"; props.onFocus?.(e); }}
+      onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "var(--input-border)"; props.onBlur?.(e); }}
+    />
+  );
+}
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
@@ -38,14 +69,8 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-    if (!gender) {
-      setError("Please select your gender.");
-      return;
-    }
-    if (!termsAccepted) {
-      setError("Please accept the Terms & Privacy Policy to continue.");
-      return;
-    }
+    if (!gender) { setError("Please select your gender."); return; }
+    if (!termsAccepted) { setError("Please accept the Terms & Privacy Policy."); return; }
     setLoading(true);
     setError(null);
 
@@ -64,30 +89,44 @@ export default function SignupPage() {
       },
     });
 
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-      return;
-    }
-
+    if (authError) { setError(authError.message); setLoading(false); return; }
     setSuccess(true);
     setLoading(false);
   };
 
+  /* ── Success screen ── */
   if (success) {
     return (
-      <div className="flex min-h-screen w-full themed-canvas items-center justify-center">
-        <div className="w-full max-w-md mx-auto text-center px-8">
-          <div className="w-16 h-16 rounded-full brand-grad flex items-center justify-center text-white text-2xl mx-auto mb-6">✓</div>
-          <h2 className="text-2xl font-bold themed-text mb-2">Check your email</h2>
-          <p className="themed-text-2 mb-6">
-            We sent a confirmation link to <span className="font-semibold">{email}</span>.
-            Click it to activate your account.
+      <div className="flex min-h-screen w-full themed-canvas items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-md text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 260, damping: 20 }}
+            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-8 shadow-2xl"
+            style={{ background: "var(--grad-brand)", boxShadow: "var(--shadow-glow)" }}
+          >
+            <Mail size={34} />
+          </motion.div>
+          <h2 className="text-3xl font-black themed-text mb-3">Check your inbox</h2>
+          <p className="themed-text-2 mb-2 leading-relaxed">
+            We sent a confirmation link to
           </p>
-          <Link href="/login" className="text-sm font-semibold text-[var(--brand-500)] hover:underline">
-            Back to sign in
+          <p className="font-bold text-lg mb-8" style={{ color: "var(--brand-text)" }}>{email}</p>
+          <p className="text-sm themed-text-3 mb-8">Click the link in the email to activate your account. Check your spam folder if you don't see it.</p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold text-white transition-all hover:scale-105"
+            style={{ background: "var(--grad-brand)", boxShadow: "var(--shadow-glow)" }}
+          >
+            Back to sign in <ArrowRight size={15} />
           </Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -98,77 +137,85 @@ export default function SignupPage() {
     <div className="flex min-h-screen w-full themed-canvas">
       <AuthSplitVisual />
 
-      <div className="flex flex-1 flex-col justify-center px-8 sm:px-16 lg:px-24 overflow-y-auto py-12 relative">
-        <div className="absolute top-6 right-6">
+      <div className="flex flex-1 flex-col justify-center px-6 sm:px-12 lg:px-20 overflow-y-auto py-12 relative">
+        <div className="absolute top-5 right-5">
           <ThemeToggle />
         </div>
-        <div className="w-full max-w-md mx-auto">
-          <h2 className="text-3xl font-bold themed-text mb-2">Create an account</h2>
-          <p className="themed-text-2 mb-8">
-            Already have an account?{" "}
-            <Link href="/login" className="text-[var(--brand-500)] font-semibold hover:underline">
-              Sign in
-            </Link>
-          </p>
 
-          <StatBadges />
-          <SocialButtons />
+        <div className="w-full max-w-[420px] mx-auto">
 
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t themed-border" />
+          {/* Brand */}
+          <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible" className="flex items-center gap-2.5 mb-10">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg" style={{ background: "var(--grad-brand)" }}>
+              <Sparkles size={16} className="text-white" />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 themed-surface themed-text-3">Or continue with email</span>
-            </div>
-          </div>
+            <span className="text-xl font-black tracking-tight themed-text">D-<span className="brand-grad-text">Lite</span></span>
+          </motion.div>
 
-          {error && (
-            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+          {/* Heading */}
+          <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
+            <h1 className="text-3xl font-black themed-text mb-1.5">Create account ✨</h1>
+            <p className="themed-text-3 text-sm">
+              Already have one?{" "}
+              <Link href="/login" className="font-semibold hover:underline" style={{ color: "var(--brand-text)" }}>
+                Sign in
+              </Link>
+            </p>
+          </motion.div>
+
+          {/* Google */}
+          <motion.div custom={2} variants={fadeUp} initial="hidden" animate="visible">
+            <SocialButtons />
+          </motion.div>
+
+          {/* Divider */}
+          <motion.div custom={3} variants={fadeUp} initial="hidden" animate="visible" className="relative my-6 flex items-center gap-4">
+            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+            <span className="text-xs themed-text-muted font-medium px-1">or fill in below</span>
+            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+          </motion.div>
+
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                key="err"
+                initial={{ opacity: 0, y: -8, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-5 rounded-2xl px-4 py-3 text-sm flex items-start gap-2 overflow-hidden"
+                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "var(--danger)" }}
+              >
+                <span className="mt-0.5 flex-shrink-0">⚠</span> {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* ── Profile Picture ── */}
-            <div className="flex flex-col items-center gap-3 py-2">
-              <AvatarUpload
-                avatarUrl={avatarUrl}
-                initials={initials}
-                onUpload={handleAvatarUpload}
-              />
+            {/* Avatar */}
+            <motion.div custom={4} variants={fadeUp} initial="hidden" animate="visible" className="flex flex-col items-center gap-2 py-1">
+              <AvatarUpload avatarUrl={avatarUrl} initials={initials} onUpload={handleAvatarUpload} />
+              {avatarUrl && (
+                <button type="button" onClick={() => setAvatarUrl(null)} className="text-xs hover:underline" style={{ color: "var(--danger)" }}>
+                  Remove photo
+                </button>
+              )}
+            </motion.div>
 
-              <p className="text-xs themed-text-3">
-                {avatarUrl ? (
-                  <button
-                    type="button"
-                    onClick={() => setAvatarUrl(null)}
-                    className="text-danger hover:underline"
-                  >
-                    Remove photo
-                  </button>
-                ) : (
-                  "Click to add a profile photo"
-                )}
-              </p>
-            </div>
+            {/* Name */}
+            <motion.div custom={5} variants={fadeUp} initial="hidden" animate="visible" className="grid grid-cols-2 gap-3">
+              <Field label="First name">
+                <StyledInput required placeholder="Jane" value={firstName} onChange={e => setFirstName(e.target.value)} />
+              </Field>
+              <Field label="Last name">
+                <StyledInput required placeholder="Doe" value={lastName} onChange={e => setLastName(e.target.value)} />
+              </Field>
+            </motion.div>
 
-            {/* ── Name ── */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium themed-text-2 mb-1.5">First name</label>
-                <Input required placeholder="Jane" className="themed-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium themed-text-2 mb-1.5">Last name</label>
-                <Input required placeholder="Doe" className="themed-input" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-              </div>
-            </div>
-
-            {/* ── Gender ── */}
-            <div>
-              <label className="block text-sm font-medium themed-text-2 mb-2">Gender</label>
+            {/* Gender */}
+            <motion.div custom={6} variants={fadeUp} initial="hidden" animate="visible">
+              <label className="block text-xs font-semibold themed-text-2 mb-2 uppercase tracking-wide">Gender</label>
               <div className="grid grid-cols-2 gap-3">
                 {(["male", "female"] as Gender[]).map((g) => {
                   const active = gender === g;
@@ -177,106 +224,104 @@ export default function SignupPage() {
                       key={g}
                       type="button"
                       onClick={() => setGender(g)}
-                      className="flex items-center justify-center gap-2.5 py-2.5 rounded-xl border text-sm font-semibold transition-all"
+                      className="flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-bold transition-all"
                       style={{
                         background: active ? "var(--grad-brand)" : "var(--surface)",
                         borderColor: active ? "transparent" : "var(--border)",
                         color: active ? "#fff" : "var(--text-secondary)",
                         boxShadow: active ? "var(--shadow-glow)" : "none",
+                        transform: active ? "scale(1.02)" : "scale(1)",
                       }}
                     >
-                      {g === "male" ? <Mars size={16} /> : <Venus size={16} />}
+                      {g === "male" ? <Mars size={15} /> : <Venus size={15} />}
                       {g === "male" ? "Male" : "Female"}
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
 
-            {/* ── Username ── */}
-            <div>
-              <label className="block text-sm font-medium themed-text-2 mb-1.5">Username</label>
-              <Input
-                required
-                placeholder="janedoe"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="themed-input"
-              />
+            {/* Username */}
+            <motion.div custom={7} variants={fadeUp} initial="hidden" animate="visible">
+              <Field label="Username">
+                <StyledInput required placeholder="janedoe" value={username} onChange={e => setUsername(e.target.value.toLowerCase())} />
+              </Field>
               <UsernameAvailability username={username} />
-            </div>
+            </motion.div>
 
-            {/* ── Email ── */}
-            <div>
-              <label className="block text-sm font-medium themed-text-2 mb-1.5">Email address</label>
-              <Input type="email" required placeholder="jane@company.com" className="themed-input" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
+            {/* Email */}
+            <motion.div custom={8} variants={fadeUp} initial="hidden" animate="visible">
+              <Field label="Email address">
+                <StyledInput type="email" required placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+              </Field>
+            </motion.div>
 
-            {/* ── Password ── */}
-            <div>
-              <label className="block text-sm font-medium themed-text-2 mb-1.5">Password</label>
-              <Input
-                type="password"
-                required
-                placeholder="Create a strong password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="themed-input"
-              />
+            {/* Password */}
+            <motion.div custom={9} variants={fadeUp} initial="hidden" animate="visible">
+              <Field label="Password">
+                <StyledInput type="password" required placeholder="Create a strong password" value={password} onChange={e => setPassword(e.target.value)} />
+              </Field>
               <PasswordStrengthMeter password={password} />
-            </div>
+            </motion.div>
 
-            {/* ── Terms ── */}
-            <button
-              type="button"
-              onClick={() => setTermsAccepted((v: boolean) => !v)}
-              className="w-full rounded-2xl border p-4 flex items-start gap-4 text-left transition-all focus:outline-none"
-              style={{
-                background: termsAccepted ? "var(--grad-brand-soft)" : "var(--surface)",
-                borderColor: termsAccepted ? "var(--border-strong)" : "var(--border)",
-                boxShadow: termsAccepted ? "var(--shadow-card)" : "none",
-              }}
-            >
-              {/* Custom animated checkbox */}
-              <div
-                className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center mt-0.5 transition-all border"
+            {/* Terms */}
+            <motion.div custom={10} variants={fadeUp} initial="hidden" animate="visible">
+              <button
+                type="button"
+                onClick={() => setTermsAccepted(v => !v)}
+                className="w-full rounded-2xl border p-4 flex items-start gap-3 text-left transition-all focus:outline-none"
                 style={{
-                  background: termsAccepted ? "var(--grad-brand)" : "var(--surface)",
-                  borderColor: termsAccepted ? "transparent" : "var(--border)",
+                  background: termsAccepted ? "var(--grad-brand-soft)" : "var(--surface)",
+                  borderColor: termsAccepted ? "var(--border-strong)" : "var(--border)",
                 }}
               >
-                {termsAccepted && <Check size={12} className="text-white" strokeWidth={3} />}
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-sm font-semibold themed-text mb-0.5">
-                  I agree to the Terms &amp; Privacy Policy
-                </p>
-                <p className="text-xs themed-text-3 leading-relaxed">
-                  By creating an account you accept our{" "}
-                  <span style={{ color: "var(--brand-text)" }}>Terms of Service</span>
-                  {" "}and{" "}
-                  <span style={{ color: "var(--brand-text)" }}>Privacy Policy</span>.
-                  Your data is encrypted and never shared.
-                </p>
-
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="flex items-center gap-1 text-[10px] themed-text-3">
-                    <Shield size={10} style={{ color: "var(--success)" }} /> End-to-end encrypted
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] themed-text-3">
-                    <Lock size={10} style={{ color: "var(--brand-text)" }} /> No spam, ever
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] themed-text-3">
-                    <FileText size={10} style={{ color: "var(--accent-purple)" }} /> MIT licensed
-                  </span>
+                <div
+                  className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center mt-0.5 border transition-all"
+                  style={{
+                    background: termsAccepted ? "var(--grad-brand)" : "var(--surface)",
+                    borderColor: termsAccepted ? "transparent" : "var(--border)",
+                  }}
+                >
+                  {termsAccepted && <Check size={11} className="text-white" strokeWidth={3} />}
                 </div>
-              </div>
-            </button>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold themed-text mb-0.5">I agree to the Terms &amp; Privacy Policy</p>
+                  <p className="text-xs themed-text-3 leading-relaxed">
+                    Your data is encrypted and never shared with third parties.
+                  </p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="flex items-center gap-1 text-[10px] themed-text-muted">
+                      <Shield size={9} className="text-success" /> Encrypted
+                    </span>
+                    <span className="flex items-center gap-1 text-[10px] themed-text-muted">
+                      <Lock size={9} style={{ color: "var(--brand-text)" }} /> No spam
+                    </span>
+                  </div>
+                </div>
+              </button>
+            </motion.div>
 
-            <Button type="submit" className="w-full py-2.5 text-base mt-2" size="lg" disabled={loading}>
-              {loading ? "Creating account…" : "Create account"}
-            </Button>
+            {/* Submit */}
+            <motion.div custom={11} variants={fadeUp} initial="hidden" animate="visible">
+              <motion.button
+                type="submit"
+                disabled={loading}
+                whileHover={!loading ? { scale: 1.015 } : undefined}
+                whileTap={!loading ? { scale: 0.98 } : undefined}
+                className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                style={{ background: "var(--grad-brand)", boxShadow: "var(--shadow-glow)" }}
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating account…
+                  </>
+                ) : (
+                  <>Create account <ArrowRight size={16} /></>
+                )}
+              </motion.button>
+            </motion.div>
+
           </form>
         </div>
       </div>
