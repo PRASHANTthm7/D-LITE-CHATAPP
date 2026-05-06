@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mars, Venus, Check, Shield, Lock, ArrowRight, Sparkles, Mail } from "lucide-react";
+import { Mars, Venus, Check, Shield, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { AuthSplitVisual } from "@/features/auth/components/AuthSplitVisual";
 import { AvatarUpload } from "@/features/auth/components/AvatarUpload";
 import { SocialButtons } from "@/features/auth/components/SocialButtons";
@@ -58,7 +58,7 @@ export default function SignupPage() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+
 
   const handleAvatarUpload = (result: { info?: unknown }) => {
     const info = result.info;
@@ -90,46 +90,11 @@ export default function SignupPage() {
     });
 
     if (authError) { setError(authError.message); setLoading(false); return; }
-    setSuccess(true);
-    setLoading(false);
+
+    window.location.href = "/setup-authenticator";
   };
 
-  /* ── Success screen ── */
-  if (success) {
-    return (
-      <div className="flex min-h-screen w-full themed-canvas items-center justify-center px-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.92 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md text-center"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 260, damping: 20 }}
-            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl mx-auto mb-8 shadow-2xl"
-            style={{ background: "var(--grad-brand)", boxShadow: "var(--shadow-glow)" }}
-          >
-            <Mail size={34} />
-          </motion.div>
-          <h2 className="text-3xl font-black themed-text mb-3">Check your inbox</h2>
-          <p className="themed-text-2 mb-2 leading-relaxed">
-            We sent a confirmation link to
-          </p>
-          <p className="font-bold text-lg mb-8" style={{ color: "var(--brand-text)" }}>{email}</p>
-          <p className="text-sm themed-text-3 mb-8">Click the link in the email to activate your account. Check your spam folder if you don't see it.</p>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold text-white transition-all hover:scale-105"
-            style={{ background: "var(--grad-brand)", boxShadow: "var(--shadow-glow)" }}
-          >
-            Back to sign in <ArrowRight size={15} />
-          </Link>
-        </motion.div>
-      </div>
-    );
-  }
+
 
   const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "?";
 

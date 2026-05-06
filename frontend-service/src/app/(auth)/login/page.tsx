@@ -51,7 +51,13 @@ function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    // Check if user has MFA enrolled — if yes, challenge them before dashboard
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+      router.push("/verify-authenticator");
+    } else {
+      router.push("/dashboard");
+    }
     router.refresh();
   };
 
@@ -97,7 +103,22 @@ function LoginForm() {
             <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
           </motion.div>
 
-          {/* Error */}
+          {/* Success / Error Messages */}
+          {searchParams.get("signup") === "success" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-5 rounded-2xl px-4 py-3 text-sm flex items-start gap-2 shadow-sm"
+              style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)", color: "var(--success)" }}
+            >
+              <ShieldCheck size={18} className="mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-bold">Account created! ✨</p>
+                <p className="text-xs opacity-90 mt-0.5">You can now sign in with your credentials.</p>
+              </div>
+            </motion.div>
+          )}
+
           {error && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
