@@ -6,22 +6,30 @@ import socketio
 
 load_dotenv()
 
-ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",")]
+_ORIGINS_ENV = os.getenv("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS: list[str] = (
+    [o.strip() for o in _ORIGINS_ENV.split(",") if o.strip()]
+    if _ORIGINS_ENV
+    else []
+)
 
+# Socket.IO requires explicit origins for browser WebSocket connections.
+# Falls back to "*" only when no env var is set (dev mode).
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins="*" if ALLOWED_ORIGINS == ["*"] else ALLOWED_ORIGINS,
+    cors_allowed_origins=ALLOWED_ORIGINS if ALLOWED_ORIGINS else "*",
 )
 
 app = FastAPI(title="D-Lite Realtime Service")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"] if ALLOWED_ORIGINS == ["*"] else ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if ALLOWED_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "Authorization"],
+    )
 
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
