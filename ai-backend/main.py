@@ -42,7 +42,7 @@ class ChatRequest(BaseModel):
 
 class TTSRequest(BaseModel):
     text: str
-    voice_id: Optional[str] = "21m00Tcm4TlvDq8ikWAM"  # ElevenLabs Rachel
+    voice_id: Optional[str] = None
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
@@ -115,19 +115,26 @@ async def chat_stream(req: ChatRequest):
     )
 
 
-# ── Text-to-Speech (ElevenLabs) ───────────────────────────────────────────────
+# ── Text-to-Speech (Deepgram) ───────────────────────────────────────────────
 
 @app.post("/tts")
 async def tts(req: TTSRequest):
     try:
-        from elevenlabs.client import ElevenLabs
-        client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
-        audio_gen = client.generate(
-            text=req.text,
-            voice=req.voice_id,
-            model="eleven_multilingual_v2",
-        )
-        audio_bytes = b"".join(audio_gen)
+        import httpx
+        dg_key = os.getenv("DEEPGRAM_API_KEY")
+        if not dg_key:
+            raise HTTPException(status_code=500, detail="DEEPGRAM_API_KEY not configured")
+
+        voice = req.voice_id or os.getenv("DEEPGRAM_TTS_VOICE", "alloy")
+        model = os.getenv("DEEPGRAM_TTS_MODEL", "gpt-tts")
+
+        url = f"https://api.deepgram.com/v1/text-to-speech?voice={voice}&model={model}&format=mp3"
+        headers = {"Authorization": f"Token {dg_key}", "Content-Type": "application/json"}
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(url, json={"text": req.text}, headers=headers)
+            resp.raise_for_status()
+            audio_bytes = resp.content
+
         return StreamingResponse(
             iter([audio_bytes]),
             media_type="audio/mpeg",
@@ -147,7 +154,8 @@ async def stt(request: Request):
         content_type = request.headers.get("content-type", "audio/webm")
 
         client = DeepgramClient(api_key=os.getenv("DEEPGRAM_API_KEY"))
-        options = PrerecordedOptions(model="nova-2", smart_format=True, language="en")
+        stt_model = os.getenv("DEEPGRAM_STT_MODEL", "nova-2")
+        options = PrerecordedOptions(model=stt_model, smart_format=True, language="en")
         response = client.listen.prerecorded.v("1").transcribe_file(
             {"buffer": body, "mimetype": content_type}, options
         )

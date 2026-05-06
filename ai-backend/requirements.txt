@@ -3,6 +3,7 @@ uvicorn
 anthropic
 openai
 deepgram-sdk
-elevenlabs
+python-dotenv
 python-dotenv
 websockets
+httpx
