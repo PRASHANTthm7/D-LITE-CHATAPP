@@ -22,9 +22,9 @@ app.add_middleware(
 )
 
 SYSTEM_PROMPT = (
-    "You are D-Lite AI, a helpful assistant built into a real-time messaging platform. "
-    "Help users manage conversations, summarize chats, draft messages, and answer questions. "
-    "Be concise, friendly, and useful."
+    "You're talking with D-Lite — a friendly, down-to-earth assistant and teammate. "
+    "Speak like a helpful friend: be casual, supportive, and concise. "
+    "Help users manage conversations, summarize chats, draft messages, and answer questions."
 )
 
 
@@ -60,26 +60,36 @@ async def chat(req: ChatRequest):
     history.append({"role": "user", "content": req.message})
 
     try:
-        if req.model == "gpt":
-            import openai
-            client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "system", "content": SYSTEM_PROMPT}, *history],
-                max_tokens=1024,
-            )
-            return {"content": response.choices[0].message.content}
+        import httpx
+        key = os.getenv("OPENROUTER_API_KEY")
+        if not key:
+            raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured")
 
-        else:  # claude (default)
-            import anthropic
-            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-            response = client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=1024,
-                system=SYSTEM_PROMPT,
-                messages=history,
-            )
-            return {"content": response.content[0].text}
+        model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+        url = "https://api.openrouter.ai/v1/chat/completions"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        payload = {
+            "model": model,
+            "messages": [{"role": "system", "content": SYSTEM_PROMPT}, *history],
+            "max_tokens": 1024,
+        }
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+            resp.raise_for_status()
+            data = resp.json()
+
+        # Try to extract chat content using common OpenAI/OpenRouter response shapes
+        content = None
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except Exception:
+            try:
+                content = data["choices"][0].get("text")
+            except Exception:
+                content = json.dumps(data)
+
+        return {"content": content}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -94,16 +104,29 @@ async def chat_stream(req: ChatRequest):
 
     async def generate():
         try:
-            import anthropic
-            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-            with client.messages.stream(
-                model="claude-sonnet-4-6",
-                max_tokens=1024,
-                system=SYSTEM_PROMPT,
-                messages=history,
-            ) as stream:
-                for text in stream.text_stream:
-                    yield f"data: {json.dumps({'delta': text})}\n\n"
+            import httpx
+            key = os.getenv("OPENROUTER_API_KEY")
+            if not key:
+                yield f"data: {json.dumps({'error': 'OPENROUTER_API_KEY not configured'})}\n\n"
+                return
+
+            model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-super-120b-a12b:free")
+            url = "https://api.openrouter.ai/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": model,
+                "messages": [{"role": "system", "content": SYSTEM_PROMPT}, *history],
+                "max_tokens": 1024,
+                "stream": True,
+            }
+
+            async with httpx.AsyncClient(timeout=None) as client:
+                async with client.stream("POST", url, json=payload, headers=headers) as resp:
+                    async for chunk in resp.aiter_text():
+                        if not chunk:
+                            continue
+                        yield f"data: {json.dumps({'delta': chunk})}\n\n"
+
             yield f"data: {json.dumps({'done': True})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
