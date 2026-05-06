@@ -1,30 +1,50 @@
 import os
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from supabase import create_client, Client
 from typing import Optional
 
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",")]
 
-app = FastAPI(title="D-Lite Core Backend")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"] if ALLOWED_ORIGINS == ["*"] else ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+_ORIGINS_ENV = os.getenv("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS: list[str] = (
+    [o.strip() for o in _ORIGINS_ENV.split(",") if o.strip()]
+    if _ORIGINS_ENV
+    else []
 )
 
+_supabase: Client | None = None
 
-def sb():
-    from supabase import create_client
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def sb() -> Client:
+    global _supabase
+    if _supabase is None:
+        _supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return _supabase
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    sb()  # warm up client at startup
+    yield
+
+
+app = FastAPI(title="D-Lite Core Backend", lifespan=lifespan)
+
+if ALLOWED_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
+        allow_headers=["Content-Type", "Authorization"],
+    )
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
